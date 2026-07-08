@@ -4,7 +4,7 @@
   "title": "Envelope",
   "description": "ai-collab 信封结构",
   "type": "object",
-  "required": ["envelope_id", "project_id", "stage", "from_role", "to_role", "action", "timestamp", "payload"],
+  "required": ["envelope_id", "project_id", "stage", "from", "to", "action", "created_at", "payload"],
   "properties": {
     "envelope_id": {
       "type": "string",
@@ -18,24 +18,24 @@
       "type": "string",
       "description": "协作阶段标识"
     },
-    "from_role": {
+    "from": {
       "type": "string",
       "enum": ["SPEC", "IMPL", "TEST", "WATCHDOG", "HUMAN"],
-      "description": "发送方角色"
+      "description": "发送方角色（对应信封 Markdown 表头 from:）"
     },
-    "to_role": {
+    "to": {
       "type": "string",
       "enum": ["SPEC", "IMPL", "TEST", "WATCHDOG", "HUMAN"],
-      "description": "接收方角色"
+      "description": "接收方角色（对应信封 Markdown 表头 to:）"
     },
     "action": {
       "type": "string",
       "description": "标准动作名称（参考 ACTIONS.md）"
     },
-    "timestamp": {
+    "created_at": {
       "type": "string",
       "format": "date-time",
-      "description": "信封创建时间"
+      "description": "信封创建时间（对应信封 Markdown 表头 created_at:）"
     },
     "depends_on": {
       "type": "array",

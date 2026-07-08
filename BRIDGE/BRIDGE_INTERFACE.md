@@ -47,6 +47,6 @@ ai-collab 通过此接口挂接外部 LLM 调用能力（如浏览器自动化�
 ## 约束（硬规则）
 
 1. **LLM 输出不得直接作为验收结论**：ai-collab 的验收权归 SPEC（L4），LLM 输出只能作为参考信息。
-2. **LLM 输出不得冒充证据等级**：LLM 输出的 evidence_level 只能是 `Inference`，不得标记为 `RuntimePASS`、`RealProviderPASS` 等更高等级。
+2. **LLM 输出不得冒充证据等级**：LLM 输出的 evidence_level 只能是 `Inference`，不得标记为 `Runtime`、`RealProvider` 等更高等级。
 3. **调用日志不写入 ai-collab**：模块自行管理日志，不污染 ai-collab 的 HANDOFF/EVIDENCE/AUDIT 目录。
 4. **敏感数据不残留**：模块的认证凭据（cookie/token/登录态）由模块自行安全存储，不得写入 ai-collab 目录。

@@ -45,7 +45,7 @@
 3. 不把自己的自检当 TEST 结论。
 4. 不把其他 actor 的信封当作可编辑文件。
 5. 不把完整报告正文写进黑板。
-6. 不伪造 `RuntimePASS`、`RealProviderPASS` 或冻结结论。
+6. 不伪造 `Runtime`、`RealProvider` 或冻结结论。
 
 ---
 

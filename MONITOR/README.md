@@ -19,6 +19,9 @@ powershell -ExecutionPolicy Bypass -File collect.ps1 -ProjectId example-project-
 powershell -ExecutionPolicy Bypass -File collect.ps1 -All
 ```
 
+> **跨平台说明**：`collect.ps1` 是 PowerShell 脚本，**默认在 Windows 上直接运行**；在 macOS / Linux 上需先安装 PowerShell（`pwsh`）再执行同样的命令。未运行采集时看板为空（不影响协议本身，信封/证据仍按 Markdown 正常写入）。HTTP 模式下可用任意平台的 `python -m http.server` 起服务。
+> *Cross-platform: `collect.ps1` runs natively on Windows; on macOS/Linux install PowerShell (`pwsh`) first. Without collection the dashboard is empty, but the protocol itself is unaffected — envelopes/evidence are still written as Markdown.*
+
 脚本会生成两个文件：
 - `PROJECTS/{project_id}/MONITOR/status.json` — 项目级状态数据
 - `MONITOR/status_data.js` — 聚合数据（供 file:// 协议使用）

@@ -17,4 +17,4 @@
 - [ ] No central runtime / scheduler / server / hard dependency was introduced.
 - [ ] No specific model or Web AI names were added.
 - [ ] No secrets, tokens, cookies, or PII are included.
-- [ ] I agree to the [Code of Conduct](CODE_OF_CONDUCT.md).
+- [ ] I agree to the [Code of Conduct](../CODE_OF_CONDUCT.md).

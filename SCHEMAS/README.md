@@ -6,6 +6,13 @@
 
 本目录包含 ai-collab 关键数据结构的 JSON Schema 定义。
 
+> **字段名映射说明**：ai-collab 在盘上的信封是 **Markdown** 文件（`HANDOFF/*.md`，结构见 `TEMPLATES/`），而非 JSON。本目录的 schema 是这些 Markdown 信封的**逻辑参考**，其字段名对应 Markdown 表头名：
+> - `from` ↔ 信封表头 `from:`
+> - `to` ↔ 信封表头 `to:`
+> - `created_at` ↔ 信封表头 `created_at:`
+> - `payload` ↔ 信封的 `## Payload` 段落
+> 写信封时请以 `TEMPLATES/` 模板与 `EXAMPLE.md` 为准；本 schema 仅作可选核对，非强制。
+
 ## 使用方式
 
 ### 规范态（当前）

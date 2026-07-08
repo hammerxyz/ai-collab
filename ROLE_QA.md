@@ -37,7 +37,7 @@
 4. 不替 CONSULTANT 做走势研判（顾问权归 CONSULTANT，L3）。
 5. 不修改其他 actor 创建的信封。
 6. 不把完整报告正文写进黑板。
-7. 不宣称 `RuntimePASS`、`RealProviderPASS` 等证据等级。
+7. 不宣称 `Runtime`、`RealProvider` 等证据等级。
 8. 不直接否决业务结论（QA 发现问题通过 Veto 信封升级，由 L2 仲裁，不自行否决）。
 
 ---

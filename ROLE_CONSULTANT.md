@@ -37,7 +37,7 @@
 4. 不替 QA 做过程质量检查（QA 权归 QA，L7）。
 5. 不修改其他 actor 创建的信封。
 6. 不把完整报告正文写进黑板。
-7. 不宣称 `RuntimePASS`、`RealProviderPASS` 等证据等级。
+7. 不宣称 `Runtime`、`RealProvider` 等证据等级。
 
 ---
 

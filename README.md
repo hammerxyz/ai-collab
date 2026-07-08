@@ -22,6 +22,9 @@
 > 💡 本仓库根目录随附一份 `SKILL.md`（[SKILL.md](SKILL.md)）——这是一份可直接交给 AI IDE 执行的接入合同，涵盖角色、交接规则与红线；也提供可复制提示词 [PROMPTS.md](PROMPTS.md) 与完整样例 [EXAMPLE.md](EXAMPLE.md)。
 > *💡 This repo ships a `SKILL.md` at its root ([SKILL.md](SKILL.md)) — a ready-to-run onboarding contract for your AI IDE, covering roles, handoff rules, and red lines. Copy-paste prompts in [PROMPTS.md](PROMPTS.md) and a full example in [EXAMPLE.md](EXAMPLE.md) are also provided.*
 
+> **30 秒概览**：零运行时、纯文件系统的「多 AI IDE 协作总线」。把仓库放到共享位置，让各 AI IDE 按 `SKILL.md` 接入，用 Markdown 信封（见 `TEMPLATES/`）在 SPEC→IMPL→TEST→SPEC 之间交接，证据写入 `EVIDENCE/`、审计写入 `AUDIT/`。不锁定任何 AI IDE、不引入中央调度、不依赖任何模型名。
+> *30-second overview: a zero-runtime, filesystem-based "multi-AI-IDE collaboration bus". Drop the repo in a shared spot, let each AI IDE onboard via `SKILL.md`, hand off work between SPEC→IMPL→TEST→SPEC with Markdown envelopes (see `TEMPLATES/`), write evidence to `EVIDENCE/` and audits to `AUDIT/`. No AI-IDE lock-in, no central scheduler, no model names.*
+
 ---
 
 ## 1. 它是什么，不是什么  *(What it is, and is not)*
@@ -227,12 +230,19 @@ Each AI IDE role ships a minimal "role constitution" file, used as the AI IDE's 
 | SPEC | AI IDE | [ROLE_SPEC.md](ROLE_SPEC.md) |
 | IMPL | AI IDE | [ROLE_IMPL.md](ROLE_IMPL.md) |
 | TEST | AI IDE | [ROLE_TEST.md](ROLE_TEST.md) |
+| CONSULTANT | AI IDE | [ROLE_CONSULTANT.md](ROLE_CONSULTANT.md) |
+| QA | AI IDE | [ROLE_QA.md](ROLE_QA.md) |
 
 | Role | AI IDE | Constitution file |
 |---|---|---|
 | SPEC | AI IDE | [ROLE_SPEC.md](ROLE_SPEC.md) |
 | IMPL | AI IDE | [ROLE_IMPL.md](ROLE_IMPL.md) |
 | TEST | AI IDE | [ROLE_TEST.md](ROLE_TEST.md) |
+| CONSULTANT | AI IDE | [ROLE_CONSULTANT.md](ROLE_CONSULTANT.md) |
+| QA | AI IDE | [ROLE_QA.md](ROLE_QA.md) |
+
+> WATCHDOG 为可选健康检查参考（规则见 [WATCHDOG.md](WATCHDOG.md)），不列入强制军规，但可作为任一 AI IDE 或人类触发的检查项。
+> *WATCHDOG is an optional health-check reference (rules in [WATCHDOG.md](WATCHDOG.md)); it is not a mandatory constitution file but can be triggered by any AI IDE or a human.*
 
 > 每份军规文件独立自包含，AI IDE 接入时只需读取自己角色对应的那一份即可。
 > *Each constitution file is self-contained; an AI IDE only needs to read the one matching its role.*

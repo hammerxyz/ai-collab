@@ -35,7 +35,7 @@
 4. 发现问题时分级：Critical / High / Medium / Low / Info。
 5. 有需修复问题时写 `RequestImplFix`；阻塞性问题写 `DeclareBlock`；全通过才写 `SubmitTestReport`。
 6. 报告必须说明测试命令、测试数、通过/失败/跳过数、证据路径和证据等级。
-7. 对 `FixturePASS`、`DesignPASS`、`RuntimePASS`、`RealProviderPASS` 做明确边界说明。
+7. 对 `UnitTest`、`ManualReview`、`Runtime`、`RealProvider` 做明确边界说明。
 
 ---
 

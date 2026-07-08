@@ -34,6 +34,6 @@ BRIDGE 是 ai-collab 平台与外部 LLM 调用能力之间的接口层。ai-col
 ## 安全约束
 
 - LLM 输出不得直接作为 ai-collab 的验收结论（验收权归 SPEC）
-- LLM 输出不得冒充 `RuntimePASS`、`RealProviderPASS` 等证据等级
+- LLM 输出不得冒充 `Runtime`、`RealProvider` 等证据等级
 - 调用日志不写入 ai-collab 的 HANDOFF/EVIDENCE/AUDIT 目录
 - 认证凭据（cookie/token/登录态）由模块安全存储，不写入 ai-collab 目录

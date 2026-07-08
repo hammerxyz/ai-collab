@@ -35,7 +35,7 @@
 3. **最终验收**：读取 IMPL 信封、TEST 信封、workspace 产物、EVIDENCE、AUDIT 后，才能写 `AcceptStage` / `RejectStage` / `Conditional`。
 4. **黑板通知**：黑板只追加短摘要、信封 ID、文件名、相对路径、hash；完整内容必须在 workspace 或 HANDOFF/EVIDENCE 文件中。
 5. **高风险审计**：验收、冻结、拒绝、冲突裁决、人工 override 必须写 `AUDIT/`。
-6. **证据诚实**：区分 `SchemaOnly`、`DesignPASS`、`FixturePASS`、`RuntimePASS`、`RealProviderPASS`，不得升级证据等级。
+6. **证据诚实**：区分 `SchemaOnly`、`ManualReview`、`UnitTest`、`Runtime`、`RealProvider`，不得升级证据等级。
 7. **遗留项处理**：进入新阶段前必须先消费上一阶段的 unresolved ledger，不得静默跳过未闭合项。
 
 ---
