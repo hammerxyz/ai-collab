@@ -10,23 +10,23 @@
 
 ## 1. 总操作合同（每个 AI IDE 都粘这一份）  *(Master contract — paste into every AI IDE)*
 
-把下面这段发给**每一个**接入的 AI IDE，把 `{ROLE}` 换成它的角色（`SPEC` / `IMPL` / `TEST` / `CONSULTANT` / `QA` / `WATCHDOG` / `HUMAN`）。
+把下面这段发给**每一个**接入的 AI IDE，把 `{ROLE}` 换成它的角色（`SPEC` / `IMPL` / `TEST` / `CONSULTANT` / `QA` / `WATCHDOG`）。（HUMAN 为人类最终裁决者，不由 AI IDE 扮演，故不在此列；需人工裁决时由人类处理。）
 
-*Send the block below to **each** onboarding AI IDE, replacing `{ROLE}` with its role.*
+*Send the block below to **each** onboarding AI IDE, replacing `{ROLE}` with its role (HUMAN excluded — human only).*
 
 ```text
 你现在作为 {ROLE} 接入 ai-collab —— 一个面向多 AI IDE 的文件系统协作总线（"路"）。请遵守以下合同：
 
 1. 工作目录：使用共享的 ai-collab 目录；你的具体项目在 PROJECTS/example-project/（按 PROJECTS/README.md 匹配真实工作目录）。
 2. 身份：先读 PROJECTS/example-project/ACTORS.md，确认你的 actor_id 已登记；没有就按 TEMPLATES/RegisterActor.md 登记。
-3. 读合同：完整阅读 README.md、PROTOCOL.md、QUICKSTART.md、STRUCTURE.md、TIMER_LOOP.md、ORDERING.md、你角色的 ROLE_{ROLE}.md，以及 RUNBOOKS/ 中对应手册。
+3. 读合同：完整阅读 README.md、PROTOCOL.md、QUICKSTART.md、STRUCTURE.md、TIMER_LOOP.md、ORDERING.md、你角色的 ROLE_{ROLE}.md（若角色为 WATCHDOG，则读 `WATCHDOG.md` 而非 `ROLE_*.md`），以及 RUNBOOKS/ 中对应手册。
 4. 动作权限：只执行 ACTIONS.md 中允许 {ROLE} 的动作。
 5. 交接：所有任务用信封（复制 TEMPLATES/ 下对应模板）写入 HANDOFF/；长任务先按 TEMPLATES/ClaimTask.md 在 CLAIMS/ 创建有效 ClaimLease。
 6. 产物：代码 / 报告写在真实工作目录；黑板（BLACKBOARD.md）只写文件名 / 相对路径 / sha256 / 短摘要，不写内容。
 7. 证据：Runtime / Benchmark / RealProvider 证据必须可复核，写入 EVIDENCE/。
 8. 红线：不写密钥 / Token / 隐私；不修改他人信封；不自审自验；不用 Fixture / SourceScan 冒充 Runtime 证据；高风险裁决必须写 AUDIT/。
 
-每次被唤醒时，按 ROLE_{ROLE}.md 与 RUNBOOKS/ 执行一次 loop，结束后写心跳（HEARTBEAT/）为 BatchComplete 或 PassiveNoTimer。
+每次被唤醒时，按你角色的 ROLE_{ROLE}.md（WATCHDOG 用 WATCHDOG.md）与 RUNBOOKS/ 执行一次 loop，结束后写心跳（HEARTBEAT/）为 BatchComplete 或 PassiveNoTimer。
 ```
 
 ```text
@@ -120,7 +120,10 @@ Your job: scan for expired leases, missing evidence, missing audits, and state c
 You do NOT: accept, edit others' files, or issue tasks.
 ```
 
-### 2.7 HUMAN  *(人类)*
+### 2.7 HUMAN  *(人类 — 非 AI IDE，不粘贴此合同)*
+
+> 注：HUMAN 为人类最终裁决者，不由 AI IDE 扮演，本块不作为可粘贴提示词，仅说明人类使用者的职责。
+> *Note: HUMAN is a human final ruler, not an AI IDE; this block is informational, not a paste-able prompt.*
 
 ```text
 你的本职：最终决策者——在信封上做人工 Accept / Reject，处理 AI IDE 无法决断的冲突。

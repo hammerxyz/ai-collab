@@ -26,12 +26,16 @@ If no role was specified, ask which role this AI IDE should play:
 
 ```
 请确认此 AI IDE 在 ai-collab 中的角色（选一个）：
-SPEC / IMPL / TEST / CONSULTANT / QA / WATCHDOG / HUMAN
+SPEC / IMPL / TEST / CONSULTANT / QA / WATCHDOG
+
+（HUMAN 由人类担任、不是 AI IDE，不通过本技能加载；需要人工裁决时由人类在信封上 Accept/Reject。）
 ```
 
 ```
 Please confirm this AI IDE's role in ai-collab (pick one):
-SPEC / IMPL / TEST / CONSULTANT / QA / WATCHDOG / HUMAN
+SPEC / IMPL / TEST / CONSULTANT / QA / WATCHDOG
+
+(HUMAN is played by a human, not an AI IDE, so it is not loaded via this skill; for manual rulings, the human Accept/Rejects the envelope.)
 ```
 
 将 `{ROLE}` 替换为以下步骤中的角色标识。*Replace `{ROLE}` with the chosen identifier below.*
@@ -59,7 +63,7 @@ Require the AI IDE to read these in order (at minimum README + PROTOCOL + role m
 | P0 | `QUICKSTART.md` | 操作手册 |
 | P1 | `PROMPTS.md` | 可粘贴提示词（本技能的完整版本） |
 | P1 | `EXAMPLE.md` | 完整周期样例 |
-| P1 | `ROLE_{ROLE}.md` | 你的角色手册（如 `ROLE_SPEC.md`） |
+| P1 | `ROLE_{ROLE}.md`（WATCHDOG 无独立手册，规则见 `WATCHDOG.md`） | 你的角色手册（SPEC/IMPL/TEST/CONSULTANT/QA） |
 | P2 | `RUNBOOKS/` 中对应手册 | 分步执行流程 |
 | P2 | `ACTIONS.md` | 动作库（检查权限） |
 | P2 | `STRUCTURE.md` | 根目录与项目空间边界 |
@@ -149,8 +153,8 @@ Based on the chosen role, append these duty constraints:
 - **本职**：扫描过期租约、缺证据、缺审计、状态冲突——只报告，不修复。
 - **禁止**：不验收、不修改他人文件、不下发任务。
 
-### HUMAN  *(人类)*
-- **本职**：最终决策者——手动 Accept/Reject 信封，处理 AI IDE 无法决断的冲突。
+### 关于 HUMAN  *(human — 不由 AI IDE 扮演)*
+`HUMAN` 是**人类最终裁决者**，不由 AI IDE 扮演，因此不通过本技能加载。当信封需要人工 Accept/Reject 或冲突需人工仲裁时，由人类使用者处理，其职责见 README §3。
 
 ## 步骤 6：一次标准 Loop / Step 6: One standard loop
 
