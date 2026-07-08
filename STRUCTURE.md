@@ -1,0 +1,131 @@
+# AI-COLLAB 目录结构边界
+
+`AI-COLLAB` 采用“根目录管协议，项目子目录管操作”的结构。
+
+---
+
+## 1. 推荐结构
+
+```text
+ai-collab/
+├── README.md                 # 总入口
+├── PROTOCOL.md               # 协议
+├── ACTIONS.md                # 动作定义
+├── ORDERING.md               # 读写顺序
+├── TIMER_LOOP.md             # 定时循环
+├── WATCHDOG.md               # 看门狗规则
+├── STRUCTURE.md              # 目录结构边界（本文件）
+├── ROLE_SPEC.md        # SPEC 角色手册
+├── ROLE_IMPL.md     # IMPL 角色手册
+├── ROLE_TEST.md   # TEST 角色手册
+├── ROLE_CONSULTANT.md        # CONSULTANT 角色手册（v1.1 新增）
+├── ROLE_QA.md                # QA 角色手册（v1.1 新增）
+├── LINT.md                   # 结构校验规则（非核心附录）
+├── ATOMIC_WRITE.md           # 原子写入约定（非核心附录）
+├── MEMORY_POLICY.md          # 记忆策略（非核心附录）
+├── ROOT_MIGRATION.md         # 根迁移策略（非核心附录）
+├── RUNBOOKS/                 # 角色手册
+├── TEMPLATES/                # 通用模板
+├── SCHEMAS/                  # JSON Schema 定义（非核心附录）
+├── BRIDGE/                   # 桥接接口
+├── MONITOR/                  # 可选只读监控
+├── PROJECTS/                 # 项目空间主入口
+│   ├── _TEMPLATE/            # 新项目空间模板
+│   └── {project_id}/
+│       ├── PROJECT.md        # 项目登记
+│       ├── ACTORS.md         # actor登记
+│       ├── README.md         # 项目入口
+│       ├── BLACKBOARD.md     # 项目黑板
+│       ├── HANDOFF/          # 项目信封
+│       ├── CLAIMS/           # 项目租约
+│       ├── HEARTBEAT/        # 项目心跳
+│       ├── EVIDENCE/         # 项目证据索引
+│       └── AUDIT/            # 项目审计
+├── HANDOFF/                  # 根级占位目录，不承接具体项目任务
+├── CLAIMS/                   # 根级占位目录，不承接具体项目任务
+├── HEARTBEAT/                # 根级占位目录，不承接具体项目任务
+├── EVIDENCE/                 # 根级占位目录，不承接具体项目任务
+└── AUDIT/                    # 根级占位目录，不承接具体项目任务
+```
+
+---
+
+## 2. 根目录职责
+
+根目录是控制协议层，负责：
+
+- 说明工具怎么用；
+- 定义动作和角色权限；
+- 提供模板；
+- 提供项目空间创建规则；
+- 提供定时器和顺序规则；
+- 提供可选只读监控；
+- 提供空占位目录，方便 WATCHDOG 发现误写根目录的结构偏差。
+
+根目录不应承接新项目的活跃任务。
+
+---
+
+## 3. 项目子目录职责
+
+每个实际开发项目必须使用独立子目录：
+
+```text
+PROJECTS/{project_id}/
+```
+
+项目子目录负责：
+
+- 绑定实际工作目录；
+- 登记参与 actor；
+- 存放项目黑板；
+- 存放项目信封；
+- 存放项目 ClaimLease；
+- 存放项目心跳；
+- 存放项目证据索引；
+- 存放项目审计。
+
+---
+
+## 4. 实际项目工作目录职责
+
+实际开发项目目录负责保存完整产出物：
+
+- 代码；
+- 计划；
+- prompt；
+- 测试报告；
+- benchmark 输出；
+- 运行日志；
+- 构建产物；
+- 真实 evidence artifact。
+
+`ai-collab` 中只保存索引、相对路径、hash、状态和短摘要。
+
+---
+
+## 5. 新项目创建流程
+
+1. 规范化实际项目路径。
+2. 计算路径 SHA256，取前 8 位作为 `path_hash8`。
+3. 创建 `project_id = {project_slug}-{path_hash8}`。
+4. 创建 `PROJECTS/{project_id}/`。
+5. 复制 `PROJECTS/_TEMPLATE/PROJECT.md`、`ACTORS.md`、`BLACKBOARD.md`。
+6. 创建 `HANDOFF/`、`CLAIMS/`、`HEARTBEAT/`、`EVIDENCE/`、`AUDIT/`。
+7. 填写项目路径、路径指纹、actor 登记。
+8. 后续该项目所有协作操作都写入该项目子目录。
+
+---
+
+## 6. 根级占位目录
+
+根目录的 `HANDOFF/`、`CLAIMS/`、`HEARTBEAT/`、`EVIDENCE/`、`AUDIT/` 只作为占位目录，不保留具体项目情况。
+
+如果这些目录中出现非 `README.md` 文件，应视为结构偏差：
+
+- 停止处理该根目录文件；
+- 根据项目路径或信封 `project_id` 判断目标项目空间；
+- 迁移或请求人类迁移到 `PROJECTS/{project_id}/`；
+- 在项目 `AUDIT/` 或 WATCHDOG 同步中记录。
+
+当项目空间已经存在时，AI IDE 必须只使用项目空间。

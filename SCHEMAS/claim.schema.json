@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "ai-collab/claim",
+  "title": "ClaimLease",
+  "description": "ai-collab 任务认领租约结构",
+  "type": "object",
+  "required": ["claim_id", "project_id", "stage", "action", "actor_id", "claimed_at", "expires_at", "status"],
+  "properties": {
+    "claim_id": {
+      "type": "string",
+      "description": "租约唯一标识"
+    },
+    "project_id": {
+      "type": "string",
+      "description": "所属项目 ID"
+    },
+    "stage": {
+      "type": "string",
+      "description": "协作阶段标识"
+    },
+    "action": {
+      "type": "string",
+      "description": "认领的动作"
+    },
+    "actor_id": {
+      "type": "string",
+      "description": "认领方 actor 标识"
+    },
+    "claimed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "认领时间"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "过期时间"
+    },
+    "renewed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "最近续租时间"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["Active", "Expired", "Completed", "Revoked"],
+      "description": "租约状态"
+    },
+    "deliverables": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "预期交付物列表"
+    }
+  },
+  "additionalProperties": true
+}

@@ -1,0 +1,47 @@
+{
+  "generated_at": "2026-06-13T22:00:00+08:00",
+  "source": "example",
+  "projects": [
+    {
+      "project_id": "example-project-a1b2c3d4",
+      "project_name": "example-project",
+      "workspace_root_label": "example-project",
+      "status": "Active",
+      "blackboard_revision": "20260613T220000-SPEC",
+      "last_updated": "2026-06-13T22:00:00+08:00",
+      "active_stages": [
+        {
+          "stage": "S2_2M",
+          "status": "InProgress",
+          "owner": "IMPL"
+        }
+      ],
+      "active_claims": [
+        {
+          "claim_id": "S2_2M_CLAIM_IMPL_20260613T220000",
+          "actor_id": "IMPL",
+          "expires_at": "2026-06-13T23:30:00+08:00",
+          "status": "Active"
+        }
+      ],
+      "actors": [
+        {
+          "actor_id": "SPEC",
+          "role": "SPEC",
+          "status": "Idle",
+          "last_seen": "2026-06-13T21:55:00+08:00"
+        },
+        {
+          "actor_id": "IMPL",
+          "role": "IMPL",
+          "status": "Working",
+          "last_seen": "2026-06-13T21:58:00+08:00"
+        }
+      ],
+      "missing_evidence": [],
+      "missing_audit": [],
+      "conflicts": []
+    }
+  ]
+}
+

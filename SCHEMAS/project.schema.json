@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "ai-collab/project",
+  "title": "Project",
+  "description": "ai-collab 项目定义结构",
+  "type": "object",
+  "required": ["project_id", "name", "workspace_root", "status", "created_at"],
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "description": "项目唯一标识，与目录名一致",
+      "pattern": "^[a-z0-9][a-z0-9-]*[a-z0-9]$"
+    },
+    "name": {
+      "type": "string",
+      "description": "项目显示名称"
+    },
+    "workspace_root": {
+      "type": "string",
+      "description": "项目工作区根目录绝对路径"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["active", "paused", "completed", "archived"],
+      "description": "项目状态"
+    },
+    "current_stage": {
+      "type": "string",
+      "description": "当前阶段标识"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "项目创建时间"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "最后更新时间"
+    },
+    "description": {
+      "type": "string",
+      "description": "项目简要描述"
+    },
+    "sync_mode": {
+      "type": "string",
+      "enum": ["local", "git", "github"],
+      "default": "local",
+      "description": "协作同步模式"
+    }
+  },
+  "additionalProperties": true
+}

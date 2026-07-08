@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "ai-collab/evidence",
+  "title": "Evidence",
+  "description": "ai-collab 证据结构",
+  "type": "object",
+  "required": ["evidence_id", "project_id", "stage", "type", "level", "verdict", "submitted_by", "submitted_at"],
+  "properties": {
+    "evidence_id": {
+      "type": "string",
+      "description": "证据唯一标识"
+    },
+    "project_id": {
+      "type": "string",
+      "description": "所属项目 ID"
+    },
+    "stage": {
+      "type": "string",
+      "description": "协作阶段标识"
+    },
+    "type": {
+      "type": "string",
+      "description": "证据类型"
+    },
+    "level": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 10,
+      "description": "证据等级（1-10）"
+    },
+    "verdict": {
+      "type": "string",
+      "enum": ["PASS", "CONDITIONAL", "FAIL", "BLOCKED", "SECURITY"],
+      "description": "证据判定结果"
+    },
+    "submitted_by": {
+      "type": "string",
+      "description": "提交方 actor 标识"
+    },
+    "submitted_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "提交时间"
+    },
+    "description": {
+      "type": "string",
+      "description": "证据描述"
+    },
+    "artifact_path": {
+      "type": "string",
+      "description": "佐证文件路径（workspace-relative）"
+    },
+    "resolved": {
+      "type": "boolean",
+      "default": false,
+      "description": "是否已解决"
+    },
+    "resolved_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "解决时间"
+    }
+  },
+  "additionalProperties": true
+}

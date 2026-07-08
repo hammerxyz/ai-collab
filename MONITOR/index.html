@@ -1,0 +1,559 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI-COLLAB Monitor</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --surface2: #f1f5f9;
+      --text: #1e293b;
+      --muted: #64748b;
+      --dim: #94a3b8;
+      --ok: #16a34a;
+      --ok-bg: rgba(22,163,74,.08);
+      --warn: #d97706;
+      --warn-bg: rgba(217,119,6,.08);
+      --bad: #dc2626;
+      --bad-bg: rgba(220,38,38,.08);
+      --info: #2563eb;
+      --info-bg: rgba(37,99,235,.08);
+      --purple: #7c3aed;
+      --purple-bg: rgba(124,58,237,.08);
+      --line: #e2e8f0;
+      --line2: #cbd5e1;
+      --radius: 10px;
+      --radius-sm: 6px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      padding: 20px 28px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      background: linear-gradient(180deg, #ffffff 0%, var(--bg) 100%);
+    }
+    .header-left { display: flex; align-items: center; gap: 16px; }
+    .logo {
+      width: 36px; height: 36px;
+      background: linear-gradient(135deg, var(--info), var(--purple));
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 16px; color: #fff;
+    }
+    .header-title h1 { font-size: 22px; font-weight: 700; letter-spacing: -.02em; }
+    .header-title p { font-size: 14px; color: var(--muted); margin-top: 1px; }
+    .toolbar { display: flex; gap: 8px; align-items: center; }
+    .toolbar input {
+      padding: 6px 10px; border: 1px solid var(--line2); border-radius: var(--radius-sm);
+      background: var(--surface); color: var(--text); font-size: 14px; min-width: 220px;
+    }
+    .toolbar button {
+      padding: 6px 14px; border: 1px solid var(--line2); border-radius: var(--radius-sm);
+      background: var(--surface2); color: var(--text); font-size: 14px; cursor: pointer;
+      transition: background .15s;
+    }
+    .toolbar button:hover { background: var(--line2); }
+    .toolbar .status-hint { font-size: 13px; color: var(--muted); }
+
+    /* ── Layout ── */
+    main { padding: 20px 28px; max-width: 1600px; margin: 0 auto; }
+
+    /* ── Global Summary Bar ── */
+    .summary-bar {
+      display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px;
+    }
+    .stat-chip {
+      display: flex; align-items: center; gap: 6px;
+      padding: 8px 14px; border-radius: var(--radius);
+      background: var(--surface); border: 1px solid var(--line);
+      font-size: 15px;
+    }
+    .stat-chip .num { font-weight: 700; font-size: 22px; }
+    .stat-chip.ok .num { color: var(--ok); }
+    .stat-chip.warn .num { color: var(--warn); }
+    .stat-chip.bad .num { color: var(--bad); }
+    .stat-chip.info .num { color: var(--info); }
+    .stat-chip.purple .num { color: var(--purple); }
+
+    /* ── Project Section ── */
+    .project-section {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+    .project-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--line);
+      display: flex; align-items: center; justify-content: space-between;
+      background: var(--surface2);
+    }
+    .project-header h2 { font-size: 20px; font-weight: 700; }
+    .project-header .meta { font-size: 14px; color: var(--muted); margin-top: 2px; }
+    .project-body { padding: 20px; }
+
+    /* ── Tabs ── */
+    .tabs {
+      display: flex; gap: 2px; border-bottom: 1px solid var(--line);
+      margin-bottom: 16px;
+    }
+    .tab {
+      padding: 10px 18px; font-size: 15px; cursor: pointer;
+      border-bottom: 2px solid transparent;
+      color: var(--muted); transition: all .15s;
+    }
+    .tab:hover { color: var(--text); }
+    .tab.active { color: var(--info); border-bottom-color: var(--info); font-weight: 600; }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* ── Stage Pipeline ── */
+    .pipeline {
+      display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 16px;
+    }
+    .stage-chip {
+      padding: 5px 12px; border-radius: 999px; font-size: 13px; font-weight: 600;
+      border: 1px solid var(--line2); white-space: nowrap;
+      transition: transform .1s;
+    }
+    .stage-chip:hover { transform: scale(1.05); }
+    .stage-chip.s-accepted { background: var(--ok-bg); color: var(--ok); border-color: rgba(22,163,74,.25); }
+    .stage-chip.s-implsubmitted { background: var(--info-bg); color: var(--info); border-color: rgba(37,99,235,.25); }
+    .stage-chip.s-planned { background: var(--surface2); color: var(--dim); border-color: var(--line2); }
+    .stage-chip.s-specissued { background: var(--purple-bg); color: var(--purple); border-color: rgba(124,58,237,.25); }
+    .stage-chip.s-conditional { background: var(--warn-bg); color: var(--warn); border-color: rgba(217,119,6,.25); }
+    .stage-chip.s-blocked { background: var(--bad-bg); color: var(--bad); border-color: rgba(220,38,38,.25); }
+    .stage-chip.s-frozen { background: rgba(148,163,184,.08); color: var(--muted); border-color: rgba(148,163,184,.2); }
+
+    /* ── Swimlane ── */
+    .swimlane {
+      display: grid; grid-template-columns: 80px 1fr; gap: 0;
+      border: 1px solid var(--line); border-radius: var(--radius);
+      overflow: hidden; margin-bottom: 12px;
+    }
+    .swimlane-role {
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .05em; writing-mode: vertical-lr; text-orientation: mixed;
+      padding: 8px; background: var(--surface2);
+    }
+    .swimlane-role.r-spec { color: var(--purple); border-right: 2px solid var(--purple); }
+    .swimlane-role.r-impl { color: var(--info); border-right: 2px solid var(--info); }
+    .swimlane-role.r-test { color: var(--ok); border-right: 2px solid var(--ok); }
+    .swimlane-body { padding: 10px 14px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .flow-arrow { color: var(--dim); font-size: 16px; }
+    .env-badge {
+      padding: 5px 12px; border-radius: var(--radius-sm); font-size: 13px;
+      background: var(--surface2); border: 1px solid var(--line2);
+      display: inline-flex; align-items: center; gap: 4px;
+    }
+    .env-badge .dot {
+      width: 6px; height: 6px; border-radius: 50%;
+    }
+    .env-badge .dot.active { background: var(--ok); }
+    .env-badge .dot.consumed { background: var(--muted); }
+    .env-badge .dot.superseded { background: var(--bad); }
+    .env-badge .dot.submitted { background: var(--info); }
+
+    /* ── Tables ── */
+    table {
+      width: 100%; border-collapse: collapse; font-size: 14px;
+    }
+    th, td {
+      text-align: left; padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+    }
+    th { color: var(--muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
+    td { vertical-align: top; }
+    tr:hover td { background: rgba(0,0,0,.02); }
+
+    /* ── Badges ── */
+    .badge {
+      display: inline-block; padding: 3px 10px; border-radius: 999px;
+      font-size: 13px; font-weight: 600;
+    }
+    .badge.pass { background: var(--ok-bg); color: var(--ok); }
+    .badge.conditional { background: var(--warn-bg); color: var(--warn); }
+    .badge.fail { background: var(--bad-bg); color: var(--bad); }
+    .badge.planned { background: var(--surface2); color: var(--dim); }
+    .badge.fixed { background: var(--info-bg); color: var(--info); }
+    .badge.medium { background: var(--warn-bg); color: var(--warn); }
+    .badge.high { background: var(--bad-bg); color: var(--bad); }
+
+    /* ── Evidence Chart ── */
+    .evidence-chart {
+      display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 16px;
+    }
+    .chart-block {
+      flex: 1; min-width: 200px;
+      background: var(--surface2); border-radius: var(--radius);
+      padding: 14px; border: 1px solid var(--line);
+    }
+    .chart-block h4 { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 8px; }
+    .chart-bar {
+      display: flex; align-items: center; gap: 8px; margin-bottom: 4px;
+    }
+    .chart-bar .label { font-size: 14px; min-width: 100px; color: var(--text); }
+    .chart-bar .bar-track { flex: 1; height: 10px; background: var(--line); border-radius: 4px; overflow: hidden; }
+    .chart-bar .bar-fill { height: 100%; border-radius: 4px; transition: width .3s; }
+    .chart-bar .bar-fill.ok { background: var(--ok); }
+    .chart-bar .bar-fill.warn { background: var(--warn); }
+    .chart-bar .bar-fill.info { background: var(--info); }
+    .chart-bar .bar-fill.purple { background: var(--purple); }
+    .chart-bar .count { font-size: 14px; color: var(--muted); min-width: 24px; text-align: right; }
+
+    /* ── Gap Tracking ── */
+    .gap-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 8px;
+    }
+    .gap-card {
+      padding: 10px 14px; border-radius: var(--radius-sm);
+      background: var(--surface2); border: 1px solid var(--line);
+      display: flex; align-items: center; gap: 10px;
+    }
+    .gap-card .gap-id {
+      font-size: 13px; font-weight: 700; color: var(--muted);
+      min-width: 28px;
+    }
+    .gap-card .gap-desc { font-size: 14px; flex: 1; }
+    .gap-card .gap-stage { font-size: 13px; color: var(--dim); }
+
+    /* ── Empty State ── */
+    .empty { color: var(--ok); font-size: 14px; padding: 8px 0; }
+
+    /* ── Error ── */
+    .error-box {
+      padding: 16px; border-radius: var(--radius); background: var(--bad-bg);
+      border: 1px solid rgba(220,38,38,.25); color: var(--bad); font-size: 14px;
+      white-space: pre-wrap; margin-top: 16px;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      header { padding: 14px 16px; }
+      main { padding: 14px 16px; }
+      .summary-bar { gap: 8px; }
+      .stat-chip { padding: 6px 10px; }
+      .stat-chip .num { font-size: 15px; }
+    }
+
+    /* ── Animations ── */
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .5; } }
+    .pulse { animation: pulse 2s infinite; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-left">
+      <div class="logo">AC</div>
+      <div class="header-title">
+        <h1>AI-COLLAB Monitor</h1>
+        <p>只读综合看板 — 多项目协作状态、信封流、证据覆盖、审计缺口</p>
+      </div>
+    </div>
+    <div class="toolbar">
+      <input id="statusPath" value="../PROJECTS/example-project-xxxxxxxx/MONITOR/status.json" aria-label="status json path">
+      <button id="loadBtn">刷新</button>
+      <span id="statusText" class="status-hint"></span>
+    </div>
+  </header>
+  <main>
+    <div id="summaryBar" class="summary-bar"></div>
+    <div id="projectList"></div>
+    <div id="errorBox" class="error-box" hidden></div>
+  </main>
+
+  <script src="status_data.js"></script>
+  <script>
+    const $ = id => document.getElementById(id);
+    const esc = v => String(v ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+    const STATUS_CLASS = {
+      Accepted: 's-accepted', ImplSubmitted: 's-implsubmitted', Planned: 's-planned',
+      SpecIssued: 's-specissued', Conditional: 's-conditional', Blocked: 's-blocked',
+      Frozen: 's-frozen', InProgress: 's-implsubmitted', TestConditionallyPassed: 's-conditional',
+      ImplSubmitted: 's-implsubmitted', Testing: 's-implsubmitted', TestReported: 's-specissued',
+      completed: 's-accepted', in_progress: 's-implsubmitted', pending: 's-planned',
+      blocked: 's-blocked', active: 's-implsubmitted'
+    };
+
+    const BADGE_CLASS = {
+      PASS: 'pass', CONDITIONAL: 'conditional', FAIL: 'fail',
+      Planned: 'planned', PartiallyFixed: 'fixed', SpecIssued: 'fixed',
+      Medium: 'medium', High: 'high'
+    };
+
+    function badge(text, cls) {
+      return `<span class="badge ${esc(cls || BADGE_CLASS[text] || 'planned')}">${esc(text)}</span>`;
+    }
+
+    function dot(cls) {
+      return `<span class="dot ${esc(cls)}"></span>`;
+    }
+
+    function tableHtml(rows, cols) {
+      if (!rows || !rows.length) return '<p class="empty">— 无 —</p>';
+      return `<table><thead><tr>${cols.map(c=>`<th>${esc(c.label)}</th>`).join('')}</tr></thead><tbody>${
+        rows.map(r=>`<tr>${cols.map(c=>`<td>${c.render ? c.render(r) : esc(r[c.key])}</td>`).join('')}</tr>`).join('')
+      }</tbody></table>`;
+    }
+
+    function renderSummary(data) {
+      const ps = data.projects || [];
+      const totalStages = ps.reduce((n,p) => n + (p.active_stages||[]).length, 0);
+      const accepted = ps.reduce((n,p) => n + (p.active_stages||[]).filter(s=>s.status==='Accepted').length, 0);
+      const inProgress = ps.reduce((n,p) => n + (p.active_stages||[]).filter(s=>!['Accepted','Planned'].includes(s.status)).length, 0);
+      const conflicts = ps.reduce((n,p) => n + (p.conflicts||[]).length, 0);
+      const missingEv = ps.reduce((n,p) => n + (p.missing_evidence||[]).length, 0);
+      const missingAu = ps.reduce((n,p) => n + (p.missing_audit||[]).length, 0);
+      const totalEvidence = ps.reduce((n,p) => n + ((p.evidence_summary||{}).total||0), 0);
+      const totalAudits = ps.reduce((n,p) => n + ((p.audit_summary||{}).total||0), 0);
+
+      $('summaryBar').innerHTML = `
+        <div class="stat-chip info"><span class="num">${ps.length}</span>项目</div>
+        <div class="stat-chip purple"><span class="num">${totalStages}</span>阶段</div>
+        <div class="stat-chip ok"><span class="num">${accepted}</span>已验收</div>
+        <div class="stat-chip info"><span class="num">${inProgress}</span>进行中</div>
+        <div class="stat-chip purple"><span class="num">${totalEvidence}</span>证据</div>
+        <div class="stat-chip warn"><span class="num">${totalAudits}</span>审计</div>
+        <div class="stat-chip ${conflicts?'bad':'ok'}"><span class="num">${conflicts}</span>冲突</div>
+        <div class="stat-chip ${missingEv?'warn':'ok'}"><span class="num">${missingEv}</span>缺证据</div>
+        <div class="stat-chip ${missingAu?'warn':'ok'}"><span class="num">${missingAu}</span>缺审计</div>
+      `;
+    }
+
+    function renderProject(project) {
+      const stages = project.active_stages || project.stages || [];
+      const envelopes = project.active_envelopes || project.envelopes || [];
+      const claims = project.active_claims || project.claims || [];
+      const actors = project.actors || [];
+      const evSum = project.evidence_summary || {};
+      const auSum = project.audit_summary || {};
+      const gaps = project.gap_tracking || [];
+
+      // Stage pipeline
+      const pipelineHtml = stages.map(s => {
+        const stageName = s.stage || s.name || '';
+        const stageStatus = s.status || 'Planned';
+        const cls = STATUS_CLASS[stageStatus] || 's-planned';
+        return `<span class="stage-chip ${cls}" title="${esc(stageName)}: ${esc(stageStatus)}">${esc(stageName.replace('S2_','').replace('S3_',''))}</span>`;
+      }).join('');
+
+      // Envelope swimlanes
+      const specEnvs = envelopes.filter(e => (e.from_to || (e.from && e.from + '→' + e.to) || '').startsWith('SPEC'));
+      const implEnvs = envelopes.filter(e => (e.from_to || (e.from && e.from + '→' + e.to) || '').startsWith('IMPL'));
+      const testEnvs = envelopes.filter(e => (e.from_to || (e.from && e.from + '→' + e.to) || '').startsWith('TEST'));
+
+      function envRow(envs) {
+        return envs.map(e => {
+          const dotCls = e.status.toLowerCase();
+          return `<span class="env-badge">${dot(dotCls)}${esc(e.action)}</span>`;
+        }).join('<span class="flow-arrow">→</span>');
+      }
+
+      // Evidence chart
+      const maxEv = Math.max(...Object.values(evSum.by_level || {}), 1);
+      const maxSem = Math.max(...Object.values(evSum.by_failure_semantics || {}), 1);
+      const levelBars = Object.entries(evSum.by_level || {}).map(([k,v]) =>
+        `<div class="chart-bar"><span class="label">${esc(k)}</span><div class="bar-track"><div class="bar-fill info" style="width:${v/maxEv*100}%"></div></div><span class="count">${v}</span></div>`
+      ).join('');
+      const semBars = Object.entries(evSum.by_failure_semantics || {}).map(([k,v]) => {
+        const fillCls = k === 'PASS' ? 'ok' : k === 'CONDITIONAL' ? 'warn' : 'bad';
+        return `<div class="chart-bar"><span class="label">${esc(k)}</span><div class="bar-track"><div class="bar-fill ${fillCls}" style="width:${v/maxSem*100}%"></div></div><span class="count">${v}</span></div>`;
+      }).join('');
+
+      // Gap cards
+      const gapCards = gaps.map(g =>
+        `<div class="gap-card"><span class="gap-id">#${g.gap_id}</span><span class="gap-desc">${esc(g.description)}</span>${badge(g.status)}<span class="gap-stage">${esc(g.stage)}</span></div>`
+      ).join('');
+
+      // Audit table
+      const auditRows = (auSum.items || []).map(a => ({
+        id: a.audit_id, action: a.action, actor: a.actor,
+        risk: badge(a.risk_level, a.risk_level === 'High' ? 'high' : 'medium'),
+        stage: a.stage, desc: a.description
+      }));
+
+      return `
+      <div class="project-section">
+        <div class="project-header">
+          <div>
+            <h2>${esc(project.project_name)}</h2>
+            <p class="meta">${esc(project.project_id)} · ${esc(project.workspace_root_label || project.project_name || '')} · ${esc(project.status || 'Active')} · 更新于 ${esc(project.last_updated || project.generated_at || '')}</p>
+          </div>
+        </div>
+        <div class="project-body">
+          <!-- Stage Pipeline -->
+          <div style="margin-bottom:20px">
+            <h3 style="font-size:15px;color:var(--muted);margin-bottom:8px;font-weight:600">阶段流水线</h3>
+            <div class="pipeline">${pipelineHtml}</div>
+          </div>
+
+          <!-- Tabs -->
+          <div class="tabs" data-project="${esc(project.project_id)}">
+            <div class="tab active" data-tab="envelopes">信封流</div>
+            <div class="tab" data-tab="actors">Actor</div>
+            <div class="tab" data-tab="evidence">证据</div>
+            <div class="tab" data-tab="audit">审计</div>
+            <div class="tab" data-tab="gaps">差距追踪</div>
+            <div class="tab" data-tab="claims">租约</div>
+          </div>
+
+          <!-- Tab: Envelopes -->
+          <div class="tab-panel active" data-tab="envelopes" data-project="${esc(project.project_id)}">
+            <div class="swimlane">
+              <div class="swimlane-role r-spec">SPEC</div>
+              <div class="swimlane-body">${specEnvs.length ? envRow(specEnvs) : '<span class="empty">— 无活跃信封 —</span>'}</div>
+            </div>
+            <div class="swimlane">
+              <div class="swimlane-role r-impl">IMPL</div>
+              <div class="swimlane-body">${implEnvs.length ? envRow(implEnvs) : '<span class="empty">— 无活跃信封 —</span>'}</div>
+            </div>
+            <div class="swimlane">
+              <div class="swimlane-role r-test">TEST</div>
+              <div class="swimlane-body">${testEnvs.length ? envRow(testEnvs) : '<span class="empty">— 无活跃信封 —</span>'}</div>
+            </div>
+            ${tableHtml(envelopes, [
+              {key:'envelope_id',label:'信封ID'},
+              {key:'stage',label:'阶段'},
+              {key:'from_to',label:'方向',render: r => esc(r.from_to || (r.from && r.to ? r.from+'→'+r.to : ''))},
+              {key:'action',label:'动作'},
+              {key:'status',label:'状态',render: r => badge(r.status)},
+              {key:'created_at',label:'时间',render: r => esc(r.created_at || r.timestamp || '')}
+            ])}
+          </div>
+
+          <!-- Tab: Actors -->
+          <div class="tab-panel" data-tab="actors" data-project="${esc(project.project_id)}">
+            ${tableHtml(actors, [
+              {key:'actor_id',label:'Actor'},
+              {key:'role',label:'角色'},
+              {key:'status',label:'状态',render: r => badge(r.status)},
+              {key:'last_seen',label:'最近活动'},
+              {key:'current_stage',label:'当前阶段'}
+            ])}
+          </div>
+
+          <!-- Tab: Evidence -->
+          <div class="tab-panel" data-tab="evidence" data-project="${esc(project.project_id)}">
+            <div class="evidence-chart">
+              <div class="chart-block">
+                <h4>按等级</h4>
+                ${levelBars}
+              </div>
+              <div class="chart-block">
+                <h4>按结果</h4>
+                ${semBars}
+              </div>
+            </div>
+            ${tableHtml((evSum.items||[]), [
+              {key:'evidence_id',label:'证据ID'},
+              {key:'stage',label:'阶段'},
+              {key:'level',label:'等级'},
+              {key:'producer',label:'生产方'},
+              {key:'semantics',label:'结果',render: r => badge(r.semantics)}
+            ])}
+          </div>
+
+          <!-- Tab: Audit -->
+          <div class="tab-panel" data-tab="audit" data-project="${esc(project.project_id)}">
+            ${tableHtml(auditRows, [
+              {key:'id',label:'审计ID'},
+              {key:'action',label:'动作'},
+              {key:'actor',label:'操作方'},
+              {key:'risk',label:'风险'},
+              {key:'stage',label:'阶段'},
+              {key:'desc',label:'描述'}
+            ])}
+          </div>
+
+          <!-- Tab: Gaps -->
+          <div class="tab-panel" data-tab="gaps" data-project="${esc(project.project_id)}">
+            <div class="gap-grid">${gapCards || '<p class="empty">— 无差距 —</p>'}</div>
+          </div>
+
+          <!-- Tab: Claims -->
+          <div class="tab-panel" data-tab="claims" data-project="${esc(project.project_id)}">
+            ${tableHtml(claims, [
+              {key:'claim_id',label:'租约ID'},
+              {key:'actor_id',label:'Actor'},
+              {key:'expires_at',label:'过期时间'},
+              {key:'status',label:'状态',render: r => badge(r.status)}
+            ])}
+          </div>
+        </div>
+      </div>`;
+    }
+
+    function render(data) {
+      // 兼容两种格式：项目级（有project_id）和全局级（有projects数组）
+      let projects;
+      if (data.projects && Array.isArray(data.projects)) {
+        projects = data.projects;
+      } else if (data.project_id) {
+        projects = [data];
+      } else {
+        projects = [];
+      }
+      renderSummary({ projects, generated_at: data.generated_at });
+      $('projectList').innerHTML = projects.map(renderProject).join('');
+      // Wire tabs
+      document.querySelectorAll('.tabs').forEach(tabBar => {
+        tabBar.querySelectorAll('.tab').forEach(tab => {
+          tab.addEventListener('click', () => {
+            const proj = tabBar.dataset.project;
+            const target = tab.dataset.tab;
+            tabBar.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            document.querySelectorAll(`.tab-panel[data-project="${proj}"]`).forEach(p => {
+              p.classList.toggle('active', p.dataset.tab === target);
+            });
+          });
+        });
+      });
+    }
+
+    async function loadStatus() {
+      $('errorBox').hidden = true;
+      $('statusText').textContent = '加载中...';
+      try {
+        const r = await fetch($('statusPath').value, { cache: 'no-store' });
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        const data = await r.json();
+        render(data);
+        $('statusText').textContent = `已加载(HTTP) · ${data.generated_at || ''}`;
+      } catch (err) {
+        // Fallback: use embedded data from status_data.js (works with file://)
+        if (window.STATUS_DATA) {
+          render(window.STATUS_DATA);
+          $('statusText').textContent = `已加载(本地) · ${window.STATUS_DATA.generated_at || ''}`;
+        } else {
+          $('statusText').textContent = '加载失败';
+          $('errorBox').hidden = false;
+          $('errorBox').textContent = `无法加载数据。\n\nfile:// 协议下请先运行 collect.ps1 生成 status_data.js，然后刷新页面。\n\n错误：${err.message}`;
+        }
+      }
+    }
+
+    $('loadBtn').addEventListener('click', loadStatus);
+    loadStatus();
+  </script>
+</body>
+</html>

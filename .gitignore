@@ -1,0 +1,34 @@
+﻿# OS files
+Thumbs.db
+.DS_Store
+
+# Monitor generated data
+MONITOR/status_data.js
+
+# Atomic write temp files
+*.tmp
+
+# BRIDGE sensitive data
+BRIDGE/cookies/*.json
+BRIDGE/user_data_*/
+BRIDGE/temp_chrome_*/
+BRIDGE/sessions/
+BRIDGE/node_modules/
+
+# Uploads
+.uploads/
+
+# Secrets / env
+.env
+.env.*
+secrets/
+*.key
+
+# Logs
+*.log
+
+# Editor / IDE
+.idea/
+.vscode/
+*.swp
+

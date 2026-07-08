@@ -1,0 +1,113 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "ai-collab/envelope",
+  "title": "Envelope",
+  "description": "ai-collab 信封结构",
+  "type": "object",
+  "required": ["envelope_id", "project_id", "stage", "from_role", "to_role", "action", "timestamp", "payload"],
+  "properties": {
+    "envelope_id": {
+      "type": "string",
+      "description": "信封唯一标识"
+    },
+    "project_id": {
+      "type": "string",
+      "description": "所属项目 ID，必须与项目目录名一致"
+    },
+    "stage": {
+      "type": "string",
+      "description": "协作阶段标识"
+    },
+    "from_role": {
+      "type": "string",
+      "enum": ["SPEC", "IMPL", "TEST", "WATCHDOG", "HUMAN"],
+      "description": "发送方角色"
+    },
+    "to_role": {
+      "type": "string",
+      "enum": ["SPEC", "IMPL", "TEST", "WATCHDOG", "HUMAN"],
+      "description": "接收方角色"
+    },
+    "action": {
+      "type": "string",
+      "description": "标准动作名称（参考 ACTIONS.md）"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "信封创建时间"
+    },
+    "depends_on": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "依赖的信封 ID 列表"
+    },
+    "requires_blackboard_revision": {
+      "type": "string",
+      "description": "要求的黑板版本号"
+    },
+    "payload": {
+      "type": "object",
+      "description": "信封内容",
+      "properties": {
+        "summary": {
+          "type": "string",
+          "description": "信封摘要"
+        },
+        "workspace_projection": {
+          "type": "object",
+          "description": "工作区投影（SubmitImpl/SubmitTestReport 强制）",
+          "properties": {
+            "project_id": { "type": "string" },
+            "workspace_root_ref": {
+              "type": "string",
+              "description": "引用 PROJECT.md#workspace_root，不重复写绝对路径"
+            },
+            "projection_type": {
+              "type": "string",
+              "enum": ["git_diff", "file_set", "directory_snapshot"]
+            },
+            "base_ref": {
+              "type": "string",
+              "description": "git commit hash 或 unknown"
+            },
+            "changed_files": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "workspace-relative 路径列表"
+            },
+            "added_files": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "removed_files": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "excluded": {
+              "type": "array",
+              "items": { "type": "string" },
+              "default": ["target/", ".git/"]
+            },
+            "artifact_refs": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "workspace-relative 报告路径"
+            }
+          }
+        },
+        "evidence_refs": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "证据文件引用路径列表"
+        },
+        "audit_refs": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "审计文件引用路径列表"
+        }
+      }
+    }
+  },
+  "additionalProperties": true
+}
