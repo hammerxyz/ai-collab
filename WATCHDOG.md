@@ -59,5 +59,5 @@ WATCHDOG writes one of:
 
 - WATCHDOG should not accept, reject, freeze, implement, or test.
 - WATCHDOG should not delete stale files.
-- WATCHDOG should not infer PASS from silence.
+- WATCHDOG should not infer a passing result from silence.
 - WATCHDOG should not expose secrets from logs or evidence.

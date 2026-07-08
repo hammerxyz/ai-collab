@@ -35,7 +35,7 @@ On each timer tick:
 
 - Implement fixes.
 - Accept or freeze a stage.
-- Treat missing test environment as PASS.
+- Treat missing test environment as passing.
 - Treat IMPL self-check as independent TEST evidence.
 
 ## No Timer Mode
@@ -44,4 +44,4 @@ If TEST has no timer:
 
 - Test only submitted implementation envelopes.
 - If tests cannot finish, write a continuation file and mark heartbeat `ManualContinuationRequired`.
-- If environment is missing, report `SkippedMissingEnv` or `BlockedMissingEnv`, never PASS.
+- If environment is missing, report `SkippedMissingEnv` or `BlockedMissingEnv`, never as passing.

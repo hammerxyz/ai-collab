@@ -24,7 +24,7 @@
 5. 交接：所有任务用信封（复制 TEMPLATES/ 下对应模板）写入 HANDOFF/；长任务先按 TEMPLATES/ClaimTask.md 在 CLAIMS/ 创建有效 ClaimLease。
 6. 产物：代码 / 报告写在真实工作目录；黑板（BLACKBOARD.md）只写文件名 / 相对路径 / sha256 / 短摘要，不写内容。
 7. 证据：Runtime / Benchmark / RealProvider 证据必须可复核，写入 EVIDENCE/。
-8. 红线：不写密钥 / Token / 隐私；不修改他人信封；不自审自验；不用 Fixture / SourceScan 冒充 Runtime 证据；高风险裁决必须写 AUDIT/。
+8. 红线：不写密钥 / Token / 隐私；不修改他人信封；不自审自验；不用 UnitTest / SourceScan 冒充 Runtime 证据；高风险裁决必须写 AUDIT/。
 
 每次被唤醒时，按你角色的 ROLE_{ROLE}.md（WATCHDOG 用 WATCHDOG.md）与 RUNBOOKS/ 执行一次 loop，结束后写心跳（HEARTBEAT/）为 BatchComplete 或 PassiveNoTimer。
 ```
@@ -39,7 +39,7 @@ You are now onboarding as {ROLE} into ai-collab — a filesystem collaboration b
 5. Handoff: every task uses an envelope (copy the matching template from TEMPLATES/) written into HANDOFF/; for long tasks, first create a valid ClaimLease in CLAIMS/ via TEMPLATES/ClaimTask.md.
 6. Artifacts: write code / reports in the real working dir; the blackboard (BLACKBOARD.md) records only filenames / relative paths / sha256 / short summaries, never content.
 7. Evidence: Runtime / Benchmark / RealProvider evidence must be reproducible; write it into EVIDENCE/.
-8. Red lines: never write keys / tokens / PII; never edit others' envelopes; never self-verify; never pass Fixture / SourceScan off as Runtime evidence; high-risk rulings must be written to AUDIT/.
+8. Red lines: never write keys / tokens / PII; never edit others' envelopes; never self-verify; never pass UnitTest / SourceScan off as Runtime evidence; high-risk rulings must be written to AUDIT/.
 
 On each wake, run one loop per ROLE_{ROLE}.md and RUNBOOKS/, then write a heartbeat (HEARTBEAT/) as BatchComplete or PassiveNoTimer.
 ```
@@ -181,8 +181,8 @@ Run one ai-collab loop as {ROLE} (directory: <ai-collab>/PROJECTS/example-projec
 - *One AI IDE acting as IMPL + TEST + SPEC: violates implement–test–accept separation.*
 - 忘建 ClaimLease 就占长任务：并发会互相覆盖。
 - *Holding a long task without a ClaimLease: concurrent work will overwrite each other.*
-- 用"我跑过了"代替 Runtime 证据：Fixture / SourceScan 不算 Runtime 证据。
-- *Saying "I ran it" instead of Runtime evidence: Fixture / SourceScan do not count as Runtime evidence.*
+- 用"我跑过了"代替 Runtime 证据：UnitTest / SourceScan 不算 Runtime 证据。
+- *Saying "I ran it" instead of Runtime evidence: UnitTest / SourceScan do not count as Runtime evidence.*
 - 改别人的信封：只能追加新信封，不能改历史信封。
 - *Editing others' envelopes: append new envelopes; never mutate historical ones.*
 

@@ -76,7 +76,7 @@ MEMORY/WORKING/
 | ClaimLease | 过期后24小时 → 降级为 Expired | WATCHDOG |
 | 黑板历史 | 超过30条状态变更 → 折叠为摘要 | HUMAN/SPEC |
 | 黑板膨胀 | 超过阈值 → 归档到 BLACKBOARD_ARCHIVE/ | HUMAN/SPEC |
-| PASS 证据 | 可从当前快照隐藏，索引保留 | WATCHDOG |
+| 通过证据 | 可从当前快照隐藏，索引保留 | WATCHDOG |
 | CONDITIONAL/FAIL/BLOCKED/SECURITY 证据 | 保持可见直到显式解决 | 不可衰减 |
 | evidence/audit 文件 | 永不因衰减删除 | 硬规则 |
 | 衰减动作 | 必须写入项目 AUDIT/ | 硬规则 |

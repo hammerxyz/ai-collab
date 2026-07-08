@@ -71,6 +71,8 @@ Require the AI IDE to read these in order (at minimum README + PROTOCOL + role m
 
 *Priority P0 = must read before acting; P1 = read early; P2 = reference as needed.*
 
+深度参考（按需，非上手必需 / Deep reference, on-demand only）：进入多 AI IDE 并发 / 长任务 / 生产场景时再按需查阅以下 v1.1 已降级为可选参考、无运行时强制的护栏文件——`CLAIMS/README.md` + `SCHEMAS/claim.schema.json`（认领 / 租约，仅责任声明、无 TTL 强制）、`TIMER_LOOP.md` + `HEARTBEAT/README.md`（轮询 / 心跳约定，协作以黑板与信封为准而非心跳）、`ATOMIC_WRITE.md`（临时文件 + rename 原子写）、`ORDERING.md`（读写顺序与依赖 / 修订控制）、`LINT.md`（结构 / 引用 / 密钥自检规则）、`MEMORY_POLICY.md`（记忆层级与归档）；日常单轮协作按本技能 + `ROLE_*.md` + `TEMPLATES/` + `EXAMPLE.md` 即可，无需先读这些。
+
 ## 步骤 3：登记身份 / Step 3: Register identity
 
 要求 AI IDE 检查并登记自己：
@@ -119,7 +121,7 @@ Below is the **master contract** every AI IDE must follow (**run one loop on eac
 - ❌ 不写密钥、Token、Cookie、真实隐私数据到任何文件。
 - ❌ 不修改他人已创建的信封。
 - ❌ 不自审自验（同一角色不能同时做实现+测试+验收）。
-- ❌ 不用 Fixture / SourceScan 冒充 Runtime 证据。
+- ❌ 不用 UnitTest / SourceScan 冒充 Runtime 证据。
 - ❌ 不在没有有效 ClaimLease 的情况下占用长任务。
 - ❌ 高风险裁决必须写入 `AUDIT/`。
 

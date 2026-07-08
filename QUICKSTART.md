@@ -185,8 +185,8 @@ AI IDE 扫描、处理、交付后，把心跳写为 `BatchComplete` 或 `Passiv
 - Never write keys, tokens, cookies, or real PII into any file.
 - 不要让一个角色同时完成"实现 + 测试 + 验收"闭环。
 - Never let one role close the implement–test–accept loop alone.
-- 不要修改别人创建的信封；不要自审自验；不要用 Fixture / SourceScan 冒充 Runtime 证据。
-- Do not edit others' envelopes; do not self-verify; do not pass Fixture / SourceScan off as Runtime evidence.
+- 不要修改别人创建的信封；不要自审自验；不要用 UnitTest / SourceScan 冒充 Runtime 证据。
+- Do not edit others' envelopes; do not self-verify; do not pass UnitTest / SourceScan off as Runtime evidence.
 - 长任务不要在没有 ClaimLease 的情况下占用；高风险裁决必须写 `AUDIT/`。
 - Do not hold long tasks without a ClaimLease; high-risk rulings must be written to `AUDIT/`.
 

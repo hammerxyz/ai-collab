@@ -470,7 +470,7 @@ PROJECTS/README.md、ORDERING.md，以及 RUNBOOKS/ 中与你角色对应的手�
 如果需要长时间执行或修改共享文件范围，必须先在 PROJECTS/{project_id}/CLAIMS/ 创建 ClaimLease。
 项目产出物必须保留在实际工作目录；PROJECTS/{project_id}/BLACKBOARD.md 只写文件名/相对路径/hash/短摘要。
 交付必须通过 PROJECTS/{project_id}/HANDOFF/ 信封完成；证据写入 PROJECTS/{project_id}/EVIDENCE/ 或阶段报告索引；高风险动作写 PROJECTS/{project_id}/AUDIT/。
-不得修改其他 actor 创建的信封；不得自审自验；不得把 Fixture/SourceScan 冒充 Runtime 证据。
+不得修改其他 actor 创建的信封；不得自审自验；不得把 UnitTest/SourceScan 冒充 Runtime 证据。
 如果没有定时器能力，按 manual_only 或 batch handoff 模式执行，并在 HEARTBEAT/ 中声明。
 ```
 
@@ -492,7 +492,7 @@ Delivery goes through PROJECTS/{project_id}/HANDOFF/ envelopes; evidence goes to
 PROJECTS/{project_id}/EVIDENCE/ or a stage-report index; high-risk actions go to
 PROJECTS/{project_id}/AUDIT/.
 Do not modify envelopes created by other actors; do not self-verify; do not pass off
-Fixture/SourceScan as Runtime evidence.
+UnitTest/SourceScan as Runtime evidence.
 If you have no timer capability, run in manual_only or batch handoff mode and declare it in HEARTBEAT/.
 ```
 
@@ -728,8 +728,8 @@ Prohibited:
 - Passing a mock provider off as RealProvider.
 - 用 IMPL 自检冒充 TEST 初验。
 - Passing IMPL self-check off as TEST first-verification.
-- 用"没有报错"冒充 PASS。
-- Passing "no error" off as PASS.
+- 用"没有报错"冒充通过。
+- Passing "no error" off as a pass。
 - 没有命令、日志、报告或 artifact 时声称已验证。
 - Claiming verified with no command, log, report, or artifact.
 
@@ -965,14 +965,14 @@ When dependencies or read/write order matter, follow `ORDERING.md`:
 
 - 证据路径存在不等于证据有效。
 - An evidence path existing does not mean the evidence is valid.
-- 测试 PASS 不等于阶段可冻结。
-- A test PASS does not mean the stage can be frozen.
+- UnitTest 不等于阶段可冻结。
+- A UnitTest does not mean the stage can be frozen。
 - IMPL 自检不能替代 TEST 初验。
 - IMPL self-check cannot replace TEST first-verification.
-- Fixture PASS 不能升级为 Runtime PASS。
-- A Fixture PASS cannot be upgraded to Runtime PASS.
-- 无真实 provider key 时不能声称 RealProvider PASS。
-- Without a real provider key, do not claim RealProvider PASS.
+- UnitTest 不能升级为 Runtime。
+- A UnitTest cannot be upgraded to Runtime。
+- 无真实 provider key 时不能声称 RealProvider。
+- Without a real provider key, do not claim RealProvider。
 
 ---
 

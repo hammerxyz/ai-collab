@@ -103,7 +103,7 @@ HTTP 模式下点击"刷新"按钮可实时拉取最新 status.json。
 - 不修改 `BLACKBOARD.md`
 - 不修改信封、claim、evidence、audit
 - 不展示密钥、token、raw PII
-- 不把"无红色告警"展示成 PASS
+- 不把"无红色告警"展示成通过
 
 如需写操作，必须通过标准协议（信封、claim、audit）完成。
 
