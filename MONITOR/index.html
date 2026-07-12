@@ -381,7 +381,7 @@
 
       // Gap cards
       const gapCards = gaps.map(g =>
-        `<div class="gap-card"><span class="gap-id">#${g.gap_id}</span><span class="gap-desc">${esc(g.description)}</span>${badge(g.status)}<span class="gap-stage">${esc(g.stage)}</span></div>`
+        `<div class="gap-card"><span class="gap-id">#${esc(String(g.gap_id))}</span><span class="gap-desc">${esc(g.description)}</span>${badge(g.status)}<span class="gap-stage">${esc(g.stage)}</span></div>`
       ).join('');
 
       // Audit table

@@ -32,3 +32,6 @@ secrets/
 .vscode/
 *.swp
 
+# Per-project monitor state
+PROJECTS/*/MONITOR/status.json
+

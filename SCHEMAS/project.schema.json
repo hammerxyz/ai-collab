@@ -4,7 +4,11 @@
   "title": "Project",
   "description": "ai-collab 项目定义结构",
   "type": "object",
-  "required": ["project_id", "name", "workspace_root", "status", "created_at"],
+  "required": ["project_id", "workspace_root", "status", "created_at"],
+  "oneOf": [
+    {"required": ["name"]},
+    {"required": ["project_name"]}
+  ],
   "properties": {
     "project_id": {
       "type": "string",
@@ -15,14 +19,18 @@
       "type": "string",
       "description": "项目显示名称"
     },
+    "project_name": {
+      "type": "string",
+      "description": "项目显示名称（与 name 等效，兼容旧模板）"
+    },
     "workspace_root": {
       "type": "string",
       "description": "项目工作区根目录绝对路径"
     },
     "status": {
       "type": "string",
-      "enum": ["active", "paused", "completed", "archived"],
-      "description": "项目状态"
+      "enum": ["active", "Active", "paused", "Paused", "completed", "Completed", "archived", "Archived"],
+      "description": "项目状态（不区分大小写）"
     },
     "current_stage": {
       "type": "string",

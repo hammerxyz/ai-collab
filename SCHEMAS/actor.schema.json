@@ -4,16 +4,16 @@
   "title": "ActorProfile",
   "description": "ai-collab Agent 能力声明结构",
   "type": "object",
-  "required": ["actor_id", "role", "ai_ide", "model"],
+  "required": ["actor_id", "role", "ai_ide"],
   "properties": {
     "actor_id": {
       "type": "string",
       "description": "Actor 唯一标识，格式：{ROLE}_{IDE}_{MODEL}",
-      "pattern": "^(SPEC|IMPL|TEST|WATCHDOG)_[A-Z0-9_]+$"
+      "pattern": "^(SPEC|IMPL|TEST|WATCHDOG|CONSULTANT|QA|HUMAN)_[A-Z0-9_]+$"
     },
     "role": {
       "type": "string",
-      "enum": ["SPEC", "IMPL", "TEST", "WATCHDOG"],
+      "enum": ["SPEC", "IMPL", "TEST", "WATCHDOG", "CONSULTANT", "QA", "HUMAN"],
       "description": "协作角色"
     },
     "ai_ide": {
@@ -22,7 +22,7 @@
     },
     "model": {
       "type": "string",
-      "description": "底层模型名称"
+      "description": "底层模型名称（可选）"
     },
     "capabilities": {
       "type": "object",

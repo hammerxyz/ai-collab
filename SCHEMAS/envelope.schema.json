@@ -20,13 +20,17 @@
     },
     "from": {
       "type": "string",
-      "enum": ["SPEC", "IMPL", "TEST", "WATCHDOG", "HUMAN"],
+      "enum": ["SPEC", "IMPL", "TEST", "WATCHDOG", "CONSULTANT", "QA", "HUMAN"],
       "description": "发送方角色（对应信封 Markdown 表头 from:）"
     },
     "to": {
-      "type": "string",
-      "enum": ["SPEC", "IMPL", "TEST", "WATCHDOG", "HUMAN"],
-      "description": "接收方角色（对应信封 Markdown 表头 to:）"
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "enum": ["SPEC", "IMPL", "TEST", "WATCHDOG", "CONSULTANT", "QA", "HUMAN"]
+      },
+      "description": "接收方角色列表（对应信封 Markdown 表头 to:，支持逗号分隔多角色）"
     },
     "action": {
       "type": "string",

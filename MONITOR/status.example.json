@@ -9,17 +9,47 @@
       "status": "Active",
       "blackboard_revision": "20260613T220000-SPEC",
       "last_updated": "2026-06-13T22:00:00+08:00",
-      "active_stages": [
+      "current_stage": "S2_2M",
+      "stages": [
         {
-          "stage": "S2_2M",
-          "status": "InProgress",
-          "owner": "IMPL"
+          "name": "S1_Spec",
+          "status": "completed",
+          "actor": "SPEC"
+        },
+        {
+          "name": "S2_2M",
+          "status": "in_progress",
+          "actor": "IMPL"
+        },
+        {
+          "name": "S2_2L",
+          "status": "pending",
+          "actor": "TEST"
         }
       ],
+      "envelopes": [
+        {
+          "envelope_id": "ENV-D2-2M-SPEC-20260613T200000",
+          "from": "SPEC",
+          "to": "IMPL",
+          "action": "AssignTask",
+          "status": "Delivered"
+        }
+      ],
+      "evidence_summary": {
+        "total": 8,
+        "pass": 5,
+        "conditional": 2,
+        "fail": 0,
+        "blocked": 1,
+        "security": 0
+      },
+      "audit_count": 2,
       "active_claims": [
         {
           "claim_id": "S2_2M_CLAIM_IMPL_20260613T220000",
           "actor_id": "IMPL",
+          "action": "Impl S2_2M",
           "expires_at": "2026-06-13T23:30:00+08:00",
           "status": "Active"
         }
@@ -38,10 +68,7 @@
           "last_seen": "2026-06-13T21:58:00+08:00"
         }
       ],
-      "missing_evidence": [],
-      "missing_audit": [],
-      "conflicts": []
+      "malformed_inputs": 0
     }
   ]
 }
-

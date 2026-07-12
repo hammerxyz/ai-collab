@@ -1,8 +1,8 @@
-<!-- 中文说明：心跳目录说明。心跳只证明最近活动，不证明任务成功。 -->
+<!-- 中文说明：心跳目录说明。心跳是协作透明度机制，建议每次循环结束刷新。 -->
 
 # HEARTBEAT Directory
 
-> **状态：可选信息（v1.1 降级）** | 心跳是 actor 自愿写的状态提示，不作为协作依赖。协作依赖黑板和信封。过期心跳不影响协作，仅作信息参考。
+> **状态：强烈建议（v1.1）** | 心跳是协作透明度机制。每次循环结束建议刷新心跳；心跳缺失时 WATCHDOG 会扫描提示，但协议本身无运行时强制执行。
 
 Root `HEARTBEAT/` is a global placeholder directory. It does not store concrete project actor liveness.
 
@@ -54,5 +54,5 @@ Examples:
 - In multi-project mode, heartbeat files live under `PROJECTS/{project_id}/HEARTBEAT/` and must include `project_id`.
 - Do not put secrets, raw logs, or large output in heartbeat files.
 - If the IDE has no timer, set `timer_supported` to `false` and `status` to `PassiveNoTimer` or `BatchComplete`.
-- A stale heartbeat does not prove failure by itself; it may be referred to WATCHDOG attention (non-mandatory).
-- A heartbeat with mismatched `workspace_root_seen` or `path_fingerprint_seen` does not authorize project work.
+- A stale heartbeat (beyond TTL) may trigger WATCHDOG attention: the actor may be flagged as potentially inactive, and WATCHDOG may suggest claim review.
+- A heartbeat with mismatched `workspace_root_seen` or `path_fingerprint_seen` suggests the workspace has changed and project work should be re-validated.

@@ -11,17 +11,14 @@
 
 ## Security model
 
-ai-collab is a **filesystem protocol** — there is no server, no network endpoint, and no executable runtime in the repo. Security therefore centers on two things:
+ai-collab is a **filesystem protocol** — there is no server, no network endpoint, and no mandatory runtime dependency in the repo — optional local tooling (PowerShell monitor, static HTML dashboard) is provided for convenience but is not required for protocol operation. Security therefore centers on two things:
 
 1. **Never commit secrets.** No keys, tokens, cookies, or real PII belong in this directory. The `.gitignore` already excludes common secret paths; review it before committing.
 2. **Protocol misuse.** Because cooperation relies on participants following the rules, the main risks are evidence forgery (e.g. passing `SourceScan` off as `Runtime`) and one role closing the implement–test–accept loop alone. These are governance issues, not code vulnerabilities.
 
 ## Reporting a vulnerability
 
-Please **do not open a public issue** for security-sensitive reports. Instead:
-
-- Open a **private security advisory** on the GitHub repository, or
-- Email the maintainers at **<security@example.com>** (replace with the real address before publishing).
+Please **do not open a public issue** for security-sensitive reports. Instead, use **GitHub Private Vulnerability Reporting** to submit security vulnerability reports.
 
 We will acknowledge within a few days and coordinate a fix / disclosure timeline with you.
 

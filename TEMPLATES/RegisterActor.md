@@ -6,7 +6,7 @@
 - envelope_id: {ENVELOPE_ID}
 - project_id: {project_id}
 - stage: ACTOR_REGISTRATION
-- from: {SPEC | IMPL | TEST | WATCHDOG | HUMAN}
+- from: {SPEC | IMPL | TEST | WATCHDOG | CONSULTANT | QA | HUMAN}
 - to: SPEC,HUMAN
 - action: RegisterActor
 - priority: P1
@@ -17,7 +17,7 @@
 ## Payload
 ### Actor
 - actor_id: {SPEC | IMPL | TEST | ...}
-- role: {SPEC | IMPL | TEST | WATCHDOG}
+- role: {SPEC | IMPL | TEST | WATCHDOG | CONSULTANT | QA | HUMAN}
 - ai_ide: {AI IDE | Other}
 - timer_supported: {true | false}
 - timer_profile: {interactive | normal | long_running | manual_only}

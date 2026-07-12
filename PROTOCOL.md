@@ -56,8 +56,21 @@ Establish a structured collaboration protocol among multiple AI IDEs, so they ca
 | Implement & self-check | AI IDE | Code implementation, unit tests, self-check report, STUB removal | IMPL |
 | Test first-verification | AI IDE | Black/white-box tests, stage first-verification, adversarial & regression tests | TEST |
 
-> 注：v1.1 另增 `CONSULTANT`（把控走势）、`QA`（过程质量审视）、`WATCHDOG`（健康检查）、`HUMAN`（最终裁决），详见 README §3。
-> *Note: v1.1 also adds `CONSULTANT` (steering), `QA` (process quality), `WATCHDOG` (health check), `HUMAN` (final ruling); see README §3.*
+> **v1.1 扩展角色**：
+>
+> | 角色 | 执行者 | 职责 | 简称 |
+> |------|--------|------|------|
+> | 走势把控 | AI IDE / 人类 | 审查架构走向、防止偏离目标 | CONSULTANT |
+> | 过程质量 | AI IDE / 人类 | 审视过程合规性、证据完整性 | QA |
+> | 健康检查 | AI IDE / 人类 | 扫描黑板、心跳、租约，标记结构偏差和冲突 | WATCHDOG |
+> | 最终裁决 | 人类 | 冲突裁决、Accept/Reject/Frozen 等不可逆操作 | HUMAN |
+>
+> | Role | Agent | Duty | Short |
+> |------|--------|------|-------|
+> | Steering | AI IDE / human | Review architectural direction, prevent target drift | CONSULTANT |
+> | Process quality | AI IDE / human | Review process compliance, evidence completeness | QA |
+> | Health check | AI IDE / human | Scan blackboard, heartbeat, claims; flag structure drift and conflicts | WATCHDOG |
+> | Final ruling | human | Conflict adjudication, Accept/Reject/Frozen and other irreversible ops | HUMAN |
 
 ---
 
@@ -174,7 +187,7 @@ All cross-party deliverables must use the following Markdown envelope format:
 
 信封只在有需要其他角色处理、确认、复验、裁决或知会的重要事项时创建。信封 Header 的 `to` 和正文每个请求段落必须明确处理对象；如果正文提到某个 actor/role 的待办，该 actor/role 读取信封时必须处理，不得以"不是单独发给我"为由忽略。若自身工作已完成且没有更多通知内容，允许只更新 `BLACKBOARD.md`，不创建空信封。
 
-Create an envelope only when there is an important item needing another role to handle / confirm / re-verify / rule / be notified. The header `to` and each request paragraph in the body must name the handler; if the body mentions a todo for an actor/role, that actor/role must handle it on reading and may not ignore it as "not sent only to me". If your own work is done and there is nothing more to notify, updating `BLACKBOARD.md` alone is allowed — no empty envelope.
+Create an envelope only when there is an important item needing another role to handle / confirm / re-verify / rule / be notified. The header `to` (one or more of SPEC / IMPL / TEST / CONSULTANT / QA / WATCHDOG / HUMAN) and each request paragraph in the body must name the handler; if the body mentions a todo for an actor/role, that actor/role must handle it on reading and may not ignore it as "not sent only to me". If your own work is done and there is nothing more to notify, updating `BLACKBOARD.md` alone is allowed — no empty envelope.
 
 ```markdown
 # Envelope: {ENVELOPE_ID}
@@ -231,8 +244,8 @@ Create an envelope only when there is an important item needing another role to 
 - supersedes: {list of superseded envelope ids, optional}
 - requires_blackboard_revision: {blackboard revision at read time, optional}
 - stage: {S2_3A / S2_4 / S3_1 etc.}
-- from: {SPEC / IMPL / TEST}
-- to: {SPEC / IMPL / TEST}
+- from: {SPEC / IMPL / TEST / CONSULTANT / QA / WATCHDOG / HUMAN}
+- to: {SPEC / IMPL / TEST / CONSULTANT / QA / WATCHDOG / HUMAN}
 - action: {standard action name, see ACTIONS.md}
 - message_type: {Command / Response / Event / Query / Veto / ApprovalRequest / ApprovalDecision}
 - priority: {P0 / P1 / P2}
@@ -607,7 +620,7 @@ The blackboard must use a three-part structure so every actor writes uniformly a
 # Audit: {AUDIT_ID}
 
 - timestamp: {ISO8601}
-- actor: {SPEC / IMPL / TEST}
+- actor: {SPEC / IMPL / TEST / CONSULTANT / QA / WATCHDOG / HUMAN}
 - action: {动作名}
 - stage: {阶段名}
 - risk_level: {Low / Medium / High}
@@ -619,7 +632,7 @@ The blackboard must use a three-part structure so every actor writes uniformly a
 # Audit: {AUDIT_ID}
 
 - timestamp: {ISO8601}
-- actor: {SPEC / IMPL / TEST}
+- actor: {SPEC / IMPL / TEST / CONSULTANT / QA / WATCHDOG / HUMAN}
 - action: {action name}
 - stage: {stage name}
 - risk_level: {Low / Medium / High}

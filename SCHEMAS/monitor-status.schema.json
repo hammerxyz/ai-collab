@@ -4,7 +4,10 @@
   "title": "MonitorStatus",
   "description": "ai-collab 看板状态结构（项目级）",
   "type": "object",
-  "required": ["project_id", "generated_at"],
+  "required": [
+    "project_id",
+    "generated_at"
+  ],
   "properties": {
     "project_id": {
       "type": "string",
@@ -24,18 +27,33 @@
       "description": "当前阶段"
     },
     "stages": {
-      "type": "array",
-      "description": "阶段流水线",
+      "type": [
+        "array",
+        "null"
+      ],
+      "description": "阶段流水线（null 等价于空数组）",
       "items": {
         "type": "object",
-        "required": ["name", "status"],
+        "required": [
+          "name",
+          "status"
+        ],
         "properties": {
-          "name": { "type": "string" },
+          "name": {
+            "type": "string"
+          },
           "status": {
             "type": "string",
-            "enum": ["completed", "in_progress", "pending", "blocked"]
+            "enum": [
+              "completed",
+              "in_progress",
+              "pending",
+              "blocked"
+            ]
           },
-          "actor": { "type": "string" }
+          "actor": {
+            "type": "string"
+          }
         }
       }
     },
@@ -44,14 +62,33 @@
       "description": "信封泳道",
       "items": {
         "type": "object",
-        "required": ["envelope_id", "from", "to", "action", "status"],
+        "required": [
+          "envelope_id",
+          "from",
+          "to",
+          "action",
+          "status"
+        ],
         "properties": {
-          "envelope_id": { "type": "string" },
-          "from": { "type": "string" },
-          "to": { "type": "string" },
-          "action": { "type": "string" },
-          "status": { "type": "string" },
-          "timestamp": { "type": "string", "format": "date-time" }
+          "envelope_id": {
+            "type": "string"
+          },
+          "from": {
+            "type": "string"
+          },
+          "to": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
         }
       }
     },
@@ -59,12 +96,24 @@
       "type": "object",
       "description": "证据统计",
       "properties": {
-        "total": { "type": "integer" },
-        "pass": { "type": "integer" },
-        "conditional": { "type": "integer" },
-        "fail": { "type": "integer" },
-        "blocked": { "type": "integer" },
-        "security": { "type": "integer" }
+        "total": {
+          "type": "integer"
+        },
+        "pass": {
+          "type": "integer"
+        },
+        "conditional": {
+          "type": "integer"
+        },
+        "fail": {
+          "type": "integer"
+        },
+        "blocked": {
+          "type": "integer"
+        },
+        "security": {
+          "type": "integer"
+        }
       }
     },
     "audit_count": {
@@ -76,12 +125,26 @@
       "description": "活跃租约",
       "items": {
         "type": "object",
-        "required": ["claim_id", "actor_id", "action", "expires_at"],
+        "required": [
+          "claim_id",
+          "actor_id",
+          "action",
+          "expires_at"
+        ],
         "properties": {
-          "claim_id": { "type": "string" },
-          "actor_id": { "type": "string" },
-          "action": { "type": "string" },
-          "expires_at": { "type": "string", "format": "date-time" }
+          "claim_id": {
+            "type": "string"
+          },
+          "actor_id": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          }
         }
       }
     },
@@ -90,14 +153,31 @@
       "description": "Actor 状态",
       "items": {
         "type": "object",
-        "required": ["actor_id", "role", "status"],
+        "required": [
+          "actor_id",
+          "role",
+          "status"
+        ],
         "properties": {
-          "actor_id": { "type": "string" },
-          "role": { "type": "string" },
-          "status": { "type": "string" },
-          "last_seen": { "type": "string", "format": "date-time" }
+          "actor_id": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "last_seen": {
+            "type": "string",
+            "format": "date-time"
+          }
         }
       }
+    },
+    "malformed_inputs": {
+      "type": "integer",
+      "description": "损坏/无法解析的输入计数"
     }
   },
   "additionalProperties": true

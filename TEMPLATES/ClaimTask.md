@@ -7,7 +7,7 @@
 - project_id: {PROJECT_ID or default}
 - stage: {STAGE}
 - actor_id: {ACTOR_ID}
-- role: {SPEC | IMPL | TEST}
+- role: {SPEC | IMPL | TEST | CONSULTANT | QA}
 - action: ClaimTask
 - related_envelope: {ENVELOPE_ID}
 - related_sequence_no: {INTEGER or none}

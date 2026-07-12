@@ -6,7 +6,7 @@
 - envelope_id: {ENVELOPE_ID}
 - project_id: {project_id}
 - stage: PROJECT_REGISTRATION
-- from: {HUMAN | SPEC}
+- from: {HUMAN | SPEC | CONSULTANT}
 - to: ALL
 - action: RegisterProject
 - priority: P0

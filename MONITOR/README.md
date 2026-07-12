@@ -84,14 +84,15 @@ HTTP 模式下点击"刷新"按钮可实时拉取最新 status.json。
 
 看板包含以下区域：
 
-- **汇总栏**：项目数、阶段数、已验收、进行中、证据数、审计数、冲突、缺证据、缺审计
+- **汇总栏**：项目数、阶段数、已验收、进行中、证据数、审计数
 - **阶段流水线**：可视化各阶段状态（绿=已验收，蓝=进行中，灰=待开始）
 - **信封流**：按 SPEC/IMPL/TEST 泳道展示活跃信封
 - **Actor 表**：各角色当前状态和最近活动
 - **证据图表**：按等级和结果分布的条形图
 - **审计表**：高风险操作记录
-- **差距追踪**：gap 卡片列表
 - **租约表**：活跃 ClaimLease 及过期时间
+
+> **注意**：冲突检测、缺证据/缺审计标记、差距追踪卡片等功能为未来规划方向，当前 Schema 和采集器均未实现。看板会渲染已有数据，缺失部分自动显示为空。
 
 ---
 
@@ -113,6 +114,8 @@ HTTP 模式下点击"刷新"按钮可实时拉取最新 status.json。
 
 ### 6.1 项目级 status.json
 
+实际字段以 `SCHEMAS/monitor-status.schema.json` 为准。核心字段：
+
 ```json
 {
   "project_id": "example-project-xxxxxxxx",
@@ -123,11 +126,20 @@ HTTP 模式下点击"刷新"按钮可实时拉取最新 status.json。
     { "name": "S2_0A", "status": "completed", "actor": "IMPL" },
     { "name": "S2_2L", "status": "in_progress", "actor": "TEST" }
   ],
-  "envelopes": [...],
-  "evidence_summary": { "total": 12, "pass": 7, "conditional": 5 },
-  "audit_count": 1,
-  "active_claims": [...],
-  "actors": [...]
+  "envelopes": [
+    { "envelope_id": "...", "from": "SPEC", "to": "IMPL", "action": "AssignTask", "status": "Delivered" }
+  ],
+  "evidence_summary": {
+    "total": 12, "pass": 7, "conditional": 3, "fail": 1, "blocked": 1, "security": 0
+  },
+  "audit_count": 3,
+  "active_claims": [
+    { "claim_id": "...", "actor_id": "SPEC_Alice", "action": "Impl S2_2L", "expires_at": "2026-06-15T10:00:00+08:00" }
+  ],
+  "actors": [
+    { "actor_id": "SPEC_Alice", "role": "SPEC", "status": "active", "last_seen": "2026-06-14T09:30:00+08:00" }
+  ],
+  "malformed_inputs": 0
 }
 ```
 

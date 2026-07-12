@@ -4,7 +4,7 @@
 
 - timestamp: {ISO8601}
 - project_id: {PROJECT_ID or default}
-- actor: {SPEC | IMPL | TEST | WATCHDOG | HUMAN}
+- actor: {SPEC | IMPL | TEST | WATCHDOG | CONSULTANT | QA | HUMAN}
 - action: {ACTION}
 - stage: {STAGE}
 - risk_level: {Low | Medium | High}
