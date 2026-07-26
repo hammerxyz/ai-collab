@@ -65,3 +65,23 @@ QA 发消息时：
 | 过程质量报告 | 出具检查报告 | 不做功能验证 |
 
 **核心原则**：QA 做过程质量审视，不做功能测试。QA 发现问题通过 Veto 信封升级到 L2 仲裁，不自行否决业务结论。QA 的检查报告权重在 IMPL 自检（L6）之上、在黑板历史（L8）之上，但不覆盖 TEST 初验（L5）和 SPEC 验收（L4）的业务结论。
+
+## 6. plan 模式（可选）
+
+> 仅当 BLACKBOARD.md 顶部有 `active_plan` 指针时启用。QA 在 plan 模式下有战术门控权（详见 PLAN.md §七.2）。
+
+**plan 生成/修订门控**：
+- SPEC 发 IssuePlan/RevisePlan 后，QA 必须复核 plan 合规性
+- 复核结果通过 SyncStatus 信封（payload review_type=QAReview, verdict=Pass/Veto）
+- 不通过时也可发 DeclareConflict（Veto, L2）
+- 不签字 -> plan 不生效
+
+**每 stage AcceptStage 前门控**：
+- qa_gate=required 的 stage，AcceptStage 前必发 QAStagePass
+- 复核依据：读 plans/qa_checklist.md + 当前 stage 的信封/证据
+- 检查项：证据等级是否虚标、AUDIT 是否齐全、信封字段是否完整、file_scope 是否越界
+- 不发 QAStagePass -> SPEC 不得 Accept（违反禁止行为 #16，WATCHDOG 检查项 19）
+
+**Veto 权**：
+- 严重合规问题 -> Veto 信封（L2，阻断 AcceptStage）
+- SPEC 不得在 QA Veto 未解除时发 AcceptStage

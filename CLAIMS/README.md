@@ -55,3 +55,31 @@ file_scope: <模块/路径> 实现说明（示例：某检索模块的实现）
 ```
 
 **理由**：`SCHEMAS/claim.schema.json` 已支持 file_scope 级冲突检测（"Active exclusive claims with overlapping file_scope conflict"），但只有填结构化路径，AI IDE 才能一行比对出两个租约是否覆盖同一文件。自由文本 scope 无法机检，冲突全靠自觉。
+
+## stage_scope 扩展（plan 协议）
+
+> 仅当项目启用 plan 模式时适用（详见 PLAN.md）。无 plan 的项目不需要此字段。
+
+ClaimTask 信封可携带 `stage_scope` 字段（claim.schema.json 的 `additionalProperties: true` 允许扩展）：
+
+- 字段值：plan 的 `stage_id`（如 S1、S2）
+- 作用：stage 级排他控制，与 file_scope（文件级排他）配合使用
+- 规则：
+  - 一个 stage 同时最多 1 个 IMPL active claim + 1 个 TEST active claim
+  - 同 stage 同角色 2 个 active claim → WATCHDOG 报 `ClaimStageConflict`
+  - 不同 stage 的 claim 可并行（如 plan 的 `parallel_with` 允许）
+  - `file_scope` 必须从 plan 的 `impl_prompt.md` / `test_prompt.md` 直接复制，不得自造
+- 示例：
+
+```yaml
+claim_id: CLAIM-20260725-001
+project_id: demo-project
+stage: S2
+stage_scope: S2          # plan 协议扩展字段
+action: SubmitImpl
+actor_id: impl-ide-01
+file_scope:
+  - src/example_project/cli.py
+  - tests/test_health.py
+status: Active
+```

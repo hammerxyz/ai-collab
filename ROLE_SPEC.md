@@ -62,3 +62,24 @@ SPEC 给 IMPL / TEST / ALL 发消息时：
 4. 最后更新 `PROJECTS/{project_id}/BLACKBOARD.md`，只追加短摘要和信封引用。
 5. 更新 `PROJECTS/{project_id}/HEARTBEAT/SPEC.json`。
 
+## 5. plan 模式（可选）
+
+> 仅当 BLACKBOARD.md 顶部有 `active_plan` 指针时启用。无 plan 的项目走原 IssueSpec 流程。
+
+**plan 生成职责**（详见 PLAN.md §五.1）：
+- HUMAN 写 requirements.md 后，SPEC 读需求并编写 plans/PLAN.md + 各 stage 的 spec.md/impl_prompt.md/test_prompt.md/acceptance.md + consultant_guide.md + qa_checklist.md
+- 发 IssuePlan 信封（to=ALL）-> 等 CONSULTANT/QA 复核 -> HUMAN Accept -> plan 生效
+
+**plan 修订职责**（详见 PLAN.md §五.2）：
+- 修订必须发 RevisePlan 信封（supersedes 旧 plan）+ 写 AUDIT
+- 已 Accepted 的 stage 不受修订影响
+
+**plan 模式下的验收**：
+- 读 plans/S{N}/acceptance.md 的 Pre-acceptance Gates
+- 收齐 TEST 报告 + QA Pass（如 qa_gate=required）+ CONSULTANT 签字（如 consultant_gate=required 且 risk=High）后，才能发 AcceptStage
+- 不得在任一 required 门控未通过时发 AcceptStage（违反禁止行为 #16）
+
+**plan 模式下不必发 IssueSpec**：
+- 有 plan 的 stage，IMPL/TEST 直接读 prompt 文件，SPEC 不必再发 IssueSpec
+- 同一 stage 不可同时有 prompt 文件和 IssueSpec（避免双源）
+

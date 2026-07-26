@@ -71,7 +71,7 @@ Require the AI IDE to read these in order (at minimum README + PROTOCOL + role m
 
 *Priority P0 = must read before acting; P1 = read early; P2 = reference as needed.*
 
-深度参考（按需，非上手必需 / Deep reference, on-demand only）：`CLAIMS/README.md` + `SCHEMAS/claim.schema.json`（认领 / 租约，长任务强烈建议）、`TIMER_LOOP.md` + `HEARTBEAT/README.md`（轮询 / 心跳约定，每次循环结束建议刷新）、`ATOMIC_WRITE.md`（临时文件 + rename 原子写）、`ORDERING.md`（读写顺序与依赖 / 修订控制）、`LINT.md`（结构 / 引用 / 密钥自检规则）、`MEMORY_POLICY.md`（记忆层级与归档）。
+深度参考（按需，非上手必需 / Deep reference, on-demand only）：`CLAIMS/README.md` + `SCHEMAS/claim.schema.json`（认领 / 租约，长任务强烈建议）、`TIMER_LOOP.md` + `HEARTBEAT/README.md`（轮询 / 心跳约定，每次循环结束建议刷新）、`ATOMIC_WRITE.md`（临时文件 + rename 原子写）、`ORDERING.md`（读写顺序与依赖 / 修订控制）、`LINT.md`（结构 / 引用 / 密钥自检规则）、`MEMORY_POLICY.md`（记忆层级与归档）、PLAN.md + TEMPLATES/IssuePlan.md + TEMPLATES/PlanPrompt.md（plan 模式可选协议，仅当项目启用 plan 时参考）。
 
 ## 步骤 3：登记身份 / Step 3: Register identity
 
@@ -173,6 +173,22 @@ When the AI IDE is waked up, execute in order:
 6. 证据写 EVIDENCE/，高风险写 AUDIT/，刷新 HEARTBEAT/。
 7. 循环结束。
 ```
+
+### 6.1 plan 模式 Loop 分支（可选）  *(Plan-mode loop branch — optional)*
+
+> 仅当 BLACKBOARD.md 顶部有 `active_plan` 指针且 plan 状态为 Active 时启用。无 plan 的项目走原 Loop。
+
+plan 模式下，标准 Loop 的步骤 2-4 替换为（详见 PLAN.md §八）：
+
+1. 读 BLACKBOARD.md -> 确认 active_plan 指针
+2. 读 {workspace}/plans/PLAN.md -> 找当前可执行 stage（depends_on 都到 gate_state）
+3. 门控检查：上游 stage 是否到 gate_state？parallel_with 之外是否有 active claim 冲突？
+4. 读 {workspace}/plans/S{N}/{role}_prompt.md（IMPL 读 impl_prompt.md，TEST 读 test_prompt.md，SPEC 读 acceptance.md，CONSULTANT 读 consultant_guide.md，QA 读 qa_checklist.md）
+5. 按 prompt 的 Goal/Scope/Criteria 细化为具体动作
+6. 写 ClaimTask（file_scope 从 prompt 直接复制，stage_scope 填 S{N}）
+7. 执行 -> 写证据 -> 写信封 -> 更新黑板（只动自己 stage 行）-> 心跳
+
+plan 生成阶段的唤醒句：`请作为 SPEC 生成 plan（目录：PROJECTS/{project_id}，需求文件：{workspace}/requirements.md）`
 
 ## 步骤 7：无定时器的唤醒句 / Step 7: No-timer wake prompt
 

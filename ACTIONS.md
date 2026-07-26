@@ -1,6 +1,6 @@
 # AI-COLLAB 标准协作动作（CBB — Collaboration Building Blocks）
 
-> 版本：1.1 | 生效日期：2026-07-07（v1.1 升级：新增 message_type 标注、CONSULTANT/QA 角色）
+> 版本：1.2 | 生效日期：2026-07-26（v1.2：新增 IssuePlan/RevisePlan 动作；v1.1：message_type 标注、CONSULTANT/QA 角色）
 > 设计参考：CBB 标准动作，每个动作对应一个信封类型
 
 ---
@@ -22,6 +22,8 @@
 
 | 动作 | message_type | 说明 |
 |------|-------------|------|
+| IssuePlan | Command | SPEC 下发项目计划（plan 模式，可选） |
+| RevisePlan | Command | SPEC 修订项目计划（supersedes 旧 plan） |
 | IssueSpec | Command | 要求 IMPL/TEST 执行实现 |
 | DefineInterface | Command | 要求 IMPL 按接口实现 |
 | AcceptStage | ApprovalDecision | SPEC 验收通过的决定 |
@@ -473,12 +475,44 @@ pub struct {InterfaceName} {
 | risk_level | Medium+ |
 | 必需payload | 偏差描述、与规范的差异、理由、影响评估 |
 
+### 6.4 IssuePlan — 下发项目计划
+
+| 字段 | 值 |
+|------|-----|
+| action | IssuePlan |
+| message_type | Command |
+| from -> to | SPEC -> ALL |
+| risk_level | High |
+| reversibility | NeedsHuman |
+| requires_audit | true |
+| 必需payload | plan_id, plan_version, requirements_ref, stage 列表摘要, plan_path, plan_sha256 |
+| 文件名 | PLAN_SPEC_TO_ALL_{TS}.md |
+
+**用途**：SPEC 在 plan 生成阶段编写完 plan 后，通过此信封下发计划给所有角色。CONSULTANT/QA 复核通过 SyncStatus 信封响应，HUMAN 在本信封上 Accept 后 plan 生效。详见 PLAN.md §五.1。
+
+### 6.5 RevisePlan — 修订项目计划
+
+| 字段 | 值 |
+|------|-----|
+| action | RevisePlan |
+| message_type | Command |
+| from -> to | SPEC -> ALL |
+| risk_level | High |
+| reversibility | NeedsHuman |
+| requires_audit | true |
+| 必需payload | plan_id, supersedes, 修订原因, 影响范围, plan_path, plan_sha256 |
+| 文件名 | PLAN_REVISE_SPEC_TO_ALL_{TS}.md |
+
+**用途**：SPEC 修订已有 plan 时通过此信封下发。supersedes 字段引用旧 IssuePlan 信封 ID。已 Accepted 的 stage 不受修订影响。详见 PLAN.md §五.2。
+
 ---
 
 ## 七、动作与角色权限矩阵
 
 | 动作 | SPEC | IMPL | TEST | CONSULTANT | QA | 人类 |
 |------|------|------|------|------------|-----|------|
+| IssuePlan | **发起** | 接收 | 接收 | 参考 | 参考 | 批准 |
+| RevisePlan | **发起** | 接收 | 接收 | 参考 | 参考 | 批准 |
 | IssueSpec | **发起** | 接收 | 接收 | 参考 | — | 裁决 |
 | DefineInterface | **发起** | 接收 | 参考 | 参考 | — | 裁决 |
 | AcceptStage | **发起** | 接收 | 接收 | 参考 | 参考 | 批准 |

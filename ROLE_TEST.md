@@ -60,3 +60,21 @@ TEST 发消息时：
 4. 如发现高风险问题，在项目 `AUDIT/` 写风险记录。
 5. 最后更新项目 `BLACKBOARD.md` 和 `HEARTBEAT/TEST.json`。
 
+## 5. plan 模式（可选）
+
+> 仅当 BLACKBOARD.md 顶部有 `active_plan` 指针且 plan 状态为 Active 时启用。
+
+**轮询 Loop 追加步骤**（详见 PLAN.md §八）：
+1. 读 BLACKBOARD.md -> 确认 active_plan 指针
+2. 读 plans/PLAN.md -> 找当前可执行 stage（IMPL 已 SubmitImpl 的 stage）
+3. 门控检查：IMPL 是否已 SubmitImpl？上游 stage 是否到 gate_state？
+4. 读 plans/S{N}/test_prompt.md -> 按 Test Plan/Verdict Criteria 执行
+5. 写 ClaimTask：file_scope 从 test_prompt.md 直接复制，stage_scope 填 S{N}
+6. 执行测试 -> 写证据 -> 写 SubmitTestReport 信封（to: SPEC,IMPL，verdict 明确）-> 更新黑板
+
+**禁止行为**：
+- 不得抄 IMPL 的 Implementation Hints（保持独立性）
+- 不得在 IMPL 未 SubmitImpl 时认领 TEST 任务
+- file_scope 不得自造，必须从 test_prompt.md 复制
+- 不得自行修改 prompt 文件；发现问题走 RequestSpecClarification
+
