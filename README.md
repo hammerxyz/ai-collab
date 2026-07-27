@@ -1,7 +1,7 @@
 # AI-COLLAB 使用说明  *(AI-COLLAB Usage Guide)*
 
-> ai-collab platform version: v1.1 | 最后更新：2026-07-11
-> ai-collab platform version: v1.1 | Last updated: 2026-07-11
+> ai-collab platform version: v1.2 | 最后更新：2026-07-26
+> ai-collab platform version: v1.2 | Last updated: 2026-07-26
 
 `AI-COLLAB` 是一个零运行时、纯文件系统的多 AI IDE 协作总线。它用 Markdown / JSON 文件模拟轻量级 `CCP/CBB`（协作控制面 / 协作黑板），让不同 AI IDE 在 SPEC→IMPL→TEST→SPEC 的标准流水线上按统一协议交接工作。
 
@@ -70,7 +70,8 @@
 ├── RUNBOOKS/                # 角色运行手册
 ├── MONITOR/                 # 只读浏览器看板
 ├── TIMER_LOOP.md            # 定时器驱动协作循环
-└── ORDERING.md              # 读写顺序与依赖控制
+├── ORDERING.md              # 读写顺序与依赖控制
+└── PLAN.md                  # 可选 Project Plan 协议（v1.2，轮询自主推进）
 ```
 
 ---
@@ -88,6 +89,7 @@
 | 从头到尾的完整协作样例 | [EXAMPLE.md](EXAMPLE.md) |
 | 定时器驱动协作循环 | [TIMER_LOOP.md](TIMER_LOOP.md) |
 | 读写顺序与 revision 控制 | [ORDERING.md](ORDERING.md) |
+| 可选 Project Plan 协议（多 stage 预编排 + 分角色 prompt） | [PLAN.md](PLAN.md) |
 | 标准模板（信封/ClaimLease/审计/登记） | `TEMPLATES/` |
 | JSON Schema（字段权威定义） | `SCHEMAS/` |
 | 角色运行手册（SPEC/IMPL/TEST/WATCHDOG） | `RUNBOOKS/` |

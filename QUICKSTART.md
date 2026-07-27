@@ -1,7 +1,7 @@
 # 操作手册 / Quick Start Guide
 
-> ai-collab v1.1 · 面向多 AI IDE 的文件系统协作总线
-> ai-collab v1.1 · a filesystem collaboration bus for multi-AI-IDE cooperation
+> ai-collab v1.2 · 面向多 AI IDE 的文件系统协作总线
+> ai-collab v1.2 · a filesystem collaboration bus for multi-AI-IDE cooperation
 
 <!-- 中文：本手册面向第一次使用 ai-collab 的开发者 / AI IDE，目标是让你在 5 分钟内完成接入并跑通一次完整协作。 -->
 
@@ -200,3 +200,6 @@ AI IDE 扫描、处理、交付后，把心跳写为 `BatchComplete` 或 `Passiv
 - To get an AI IDE running now: paste the [PROMPTS.md](PROMPTS.md) contract into each AI IDE; copy one full cycle from [EXAMPLE.md](EXAMPLE.md).
 - 想参与共建，见 `CONTRIBUTING.md`、路线图 `ROADMAP.md`、变更记录 `CHANGELOG.md`。
 - To contribute, see `CONTRIBUTING.md`, `ROADMAP.md`, `CHANGELOG.md`.
+
+> **可选增强（v1.2）**：如果项目有多个 stage 且希望 actor 轮询时自主推进，可启用 Project Plan 协议——SPEC 预先编排 stage 序列与各角色 prompt，actor 唤醒后直接读自己的 prompt 执行。详见 [PLAN.md](PLAN.md)。
+> *Optional (v1.2): for multi-stage projects, the Project Plan protocol lets actors advance autonomously on wake-up by reading their own role prompt, instead of waiting for SPEC to issue each task. See [PLAN.md](PLAN.md).*

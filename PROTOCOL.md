@@ -1,7 +1,7 @@
 # AI-COLLAB 协作协议（CCP — Collaboration Communication Protocol）  *(Collaboration Protocol)*
 
-> 版本：1.1 | 生效日期：2026-07-07（v1.1 整改升级）
-> Version: 1.1 | Effective: 2026-07-07 (v1.1 remediation upgrade)
+> 版本：1.1 | 生效日期：2026-07-07（v1.1 整改升级；核心协议在 v1.2 中保持不变，plan 为可选扩展）
+> Version: 1.1 | Effective: 2026-07-07 (v1.1 remediation upgrade; core protocol unchanged in v1.2 — plan is an optional extension)
 > 设计参考：CCP协作总线架构，纯 prompt 驱动，文件系统为总线
 > Design: CCP collaboration-bus architecture, pure-prompt driven, filesystem as the bus
 
@@ -813,3 +813,6 @@ L8  blackboard history state           ← existing fact, not unilaterally rewri
   - Blackboard §5.3 gains a self-enforcing cap (>20 → archive then write; next actor maintains it)
   - CLAIMS 租约 `file_scope` 要求填具体文件路径列表（非自由文本，使冲突检测可机器化）
   - CLAIMS lease `file_scope` must list concrete file paths (not free text), making conflict detection machine-checkable
+- **v1.2（可选扩展）** *(v1.2 — optional extension)*：
+  - 新增可选 Project Plan 协议（PLAN.md）：SPEC 预编排 stage 序列 + 各角色 prompt，actor 轮询自主推进；新增 IssuePlan/RevisePlan 动作；不修改核心信封格式与铁律
+  - New optional Project Plan protocol (PLAN.md): SPEC pre-arranges stage sequence + per-role prompts for autonomous polling; adds IssuePlan/RevisePlan actions; core envelope format and iron rules unchanged
