@@ -102,6 +102,27 @@ PROJECTS/{project_id}/
 
 `ai-collab` 中只保存索引、相对路径、hash、状态和短摘要。
 
+### 4.1 plans/ 目录（plan 模式可选）  *(plans/ directory — optional, plan mode only)*
+
+> 仅当项目启用 plan 模式时存在（详见 PLAN.md）。无 plan 的项目不需要此目录。
+
+`{workspace_root}/plans/` 存放 plan 正文（产出物层，不得写入 PROJECTS/{project_id}/ 控制面）：
+
+```text
+{workspace_root}/plans/
+├── PLAN.md                           # 总编排：stage 序列 + 依赖 + 门控
+├── consultant_guide.md               # CONSULTANT 全局研判要点
+├── qa_checklist.md                   # QA 全局检查清单
+├── requirements.md                   # HUMAN 写的项目需求（plan 输入，可在 plans/ 上级）
+└── S{N}/                             # 每个 stage 一个子目录
+    ├── spec.md                       # stage 规范正文
+    ├── impl_prompt.md                # IMPL 的详细 prompt
+    ├── test_prompt.md                # TEST 的详细 prompt
+    └── acceptance.md                 # SPEC 的验收 checklist
+```
+
+控制面只保留薄索引：PROJECT.md 加 `requirements_ref` / `active_plan` 指针，BLACKBOARD.md 顶部加 `active_plan` 指针。
+
 ---
 
 ## 5. 新项目创建流程

@@ -63,3 +63,22 @@ CONSULTANT 发消息时：
 | 流程不规范 | 提出改进建议 | 不替 WATCHDOG 执行检查 |
 
 **核心原则**：顾问提供研判和指导，但不替代任何角色的核心职责。其意见权重高于 SPEC（L4），在 SPEC 决策前提供参考；SPEC 如不认同可提请 HUMAN（L1）仲裁。
+
+## 6. plan 模式（可选）
+
+> 仅当 BLACKBOARD.md 顶部有 `active_plan` 指针时启用。CONSULTANT 在 plan 模式下有战略门控权（详见 PLAN.md §七.1）。
+
+**plan 生成/修订门控**：
+- SPEC 发 IssuePlan/RevisePlan 后，CONSULTANT 必须复核走势
+- 复核结果通过 SyncStatus 信封（payload review_type=ConsultantReview, verdict=Pass/Veto）
+- 不通过时也可发 DeclareConflict（Veto, L3）
+- 不签字 -> plan 不生效
+
+**High risk stage 门控**：
+- risk_level=High 且 consultant_gate=required 的 stage，AcceptStage 前必签字
+- 复核依据：读 plans/consultant_guide.md + 当前 stage 的 spec.md
+- 不签字 -> SPEC 不得 Accept（违反禁止行为 #16，WATCHDOG 检查项 20）
+
+**可选审视**：
+- 其他 stage（非 High risk）可选择性审视，发现问题发 DeclareConflict
+- 不阻塞主线，但保留 L3 否决权
