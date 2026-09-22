@@ -1,6 +1,6 @@
 # AI-COLLAB 使用说明
 
-> ai-collab platform version: v1.3 | 最后更新：2026-07-30
+> ai-collab platform version: v1.3 | 最后更新：2026-09-22
 
 `AI-COLLAB` 是零运行时、纯文件系统的多 AI IDE 协作总线。用 Markdown / JSON 文件模拟轻量级 `CCP/CBB`（协作控制面 / 协作黑板），让不同 AI IDE 在 SPEC→IMPL→TEST→SPEC 流水线上按统一协议交接工作。
 
