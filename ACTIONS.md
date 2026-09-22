@@ -1,483 +1,537 @@
-# AI-COLLAB 标准协作动作（CBB — Collaboration Building Blocks）
+# AI-COLLAB Standard Collaboration Actions
 
-> 版本：1.2 | 生效日期：2026-07-26（v1.2：新增 IssuePlan/RevisePlan 动作；v1.1：message_type 标注、CONSULTANT/QA 角色）
-> 设计参考：CBB 标准动作，每个动作对应一个信封类型
+> Version: 1.3 | Effective Date: 2026-07-30 (v1.3: Direction 3 Phase 1 static risk annotation; v1.2: add IssuePlan/RevisePlan actions; v1.1: message_type annotation, CONSULTANT/QA roles)
+> Design reference: CBB standard actions; each action corresponds to one envelope type
 
 ---
 
-## 一、动作分类
+## 0. Risk Grading and Auto Closed-Loop (v1.3 New / Direction 3 Phase 1)
 
-| 类别 | 动作数 | 说明 |
+> v1.5 confirmed (seven-step adjudication; vacuum-period decision pending community review). Phase 1 is pure annotation, does not alter existing flows; benefits land immediately.
+
+Each action is annotated with `reversible` (whether reversible) + `blast_radius` (impact scope), from which the risk grade is derived to decide whether human approval is required:
+
+| reversible | blast_radius | risk grade | behavior |
+|-----------|--------------|---------|------|
+| true | local | Low | actor auto closed-loop, no human required |
+| true | cross-file | Medium | actor closed-loop, AUDIT trail left |
+| false | * | High | escalate to human |
+| * | cross-repo | High | escalate to human |
+
+**Design goal**: Low-risk, reversible actions may let actor auto close the loop without human endorsement; only irreversible, high-risk actions escalate to human. Protects human attention, prevents rubber-stamp.
+
+**Phase 1 scope**: Pure static annotation, no dynamic trust value computation introduced. Phase 2 (dynamic decay + circuit breaker) pending community experimental data; see EVOLUTION.md Direction 3.
+
+### Action Risk Annotation Table (v1.3 New)
+
+| Action | risk_level (original) | reversible | blast_radius | grade | assessment rationale |
+|------|-------------------|-----------|--------------|------|---------|
+| IssuePlan | High | false | cross-file | High | plan affects global stage sequence, cannot be silently retracted |
+| RevisePlan | High | false | cross-file | High | supersedes old plan, history is irreversible |
+| IssueSpec | Medium | true | cross-file | Medium | spec is revisable but affects multiple roles |
+| DefineInterface | High | false | cross-file | High | interface definition constrains subsequent implementation, irreversible |
+| AcceptStage | High | false | cross-file | High | acceptance pass = stage frozen, irreversible |
+| RejectStage | Medium | true | local | Low | rejection allows resubmission, impact only current stage |
+| ClaimTask | Low | true | local | Low | claim is releasable, impact only self |
+| SubmitImpl | Medium | true | cross-file | Medium | submission can be reworked, but affects TEST work |
+| SubmitSelfCheck | Low | true | local | Low | self-check report can be updated |
+| RequestSpecClarification | Low | true | local | Low | read-only query, no side effects |
+| SubmitTestReport | Medium | true | cross-file | Medium | test report affects SPEC acceptance decision |
+| RequestImplFix | Medium | true | cross-file | Medium | requires rework, affects IMPL |
+| SubmitAdversarialReport | Low | true | local | Low | notification event, can be supplemented |
+| SubmitRegressionReport | Low | true | local | Low | notification event, can be supplemented |
+| DeclareBlock | Medium | true | local | Low | block can be released |
+| ResolveBlock | Low | true | local | Low | block release can be redeclared |
+| DeclareConflict | High | true | cross-file | Medium | conflict can be arbitrated, but affects multiple parties |
+| EscalateToHuman | High | true | local | Low | escalation requests human, retractable |
+| SyncStatus | Low | true | local | Low | status sync can be resent |
+| RegisterProject | Medium | false | cross-repo | High | project registration affects global state, cannot be silently deleted |
+| RegisterActor | Medium | false | cross-file | High | actor registration affects permission matrix |
+| Heartbeat | Low | true | local | Low | heartbeat can be resent |
+| RenewClaim | Low | true | local | Low | renewal is revocable |
+| ReleaseClaim | Low | true | local | Low | release allows re-claim |
+| WatchdogSync | Low | true | local | Low | sync can be resent |
+| RecordDecision | Medium | false | cross-file | High | audit record is immutable |
+| RecordRisk | Medium | false | cross-file | High | audit record is immutable |
+| RecordDeviation | Medium | false | cross-file | High | audit record is immutable |
+
+**Annotation summary**: Low 14 / Medium 5 / High 9 (28 actions total). Low grade may auto close loop; High grade requires human approval.
+
+---
+
+## 1. Action Classification
+
+| Category | Action count | Description |
 |------|--------|------|
-| 规范类 | 4 | SPEC 发起，定义规范和接口 |
-| 实现类 | 4 | IMPL 发起，提交代码和自检 |
-| 测试类 | 4 | TEST 发起，执行测试和初验 |
-| 协调类 | 7 | 任意方发起，处理异常、冲突、项目/actor登记 |
-| 审计类 | 3 | 任意方发起，记录关键决策 |
-| 定时类 | 4 | 定时扫描、心跳、租约续期、看门狗同步 |
+| Spec | 4 | SPEC initiates; defines specs and interfaces |
+| Implementation | 4 | IMPL initiates; submits code and self-check |
+| Testing | 4 | TEST initiates; executes tests and preliminary acceptance |
+| Coordination | 7 | Any party initiates; handles exceptions, conflicts, project/actor registration |
+| Audit | 3 | Any party initiates; records key decisions |
+| Timer | 4 | Scheduled scan, heartbeat, lease renewal, watchdog sync |
 
-### 动作 message_type 索引（v1.1 新增）
+### Action message_type Index (v1.1 New)
 
-每个动作标注消息语义类型，接收方据此判断是否必须回应：
+Each action is annotated with message semantic type, by which the receiver decides whether a response is required:
 
-| 动作 | message_type | 说明 |
+| Action | message_type | Description |
 |------|-------------|------|
-| IssuePlan | Command | SPEC 下发项目计划（plan 模式，可选） |
-| RevisePlan | Command | SPEC 修订项目计划（supersedes 旧 plan） |
-| IssueSpec | Command | 要求 IMPL/TEST 执行实现 |
-| DefineInterface | Command | 要求 IMPL 按接口实现 |
-| AcceptStage | ApprovalDecision | SPEC 验收通过的决定 |
-| RejectStage | ApprovalDecision | SPEC 验收不通过的决定 |
-| ClaimTask | Event | 通知已认领（不要求回应） |
-| SubmitImpl | Command | 要求 TEST 执行初验 |
-| SubmitSelfCheck | Event | 通知自检完成（供 TEST 参考） |
-| RequestSpecClarification | Query | 只读查询规范疑问 |
-| SubmitTestReport | Response | 对 SubmitImpl 的初验回执 |
-| RequestImplFix | Command | 要求 IMPL 修复缺陷 |
-| SubmitAdversarialReport | Event | 通知对抗性测试结果 |
-| SubmitRegressionReport | Event | 通知回归测试结果 |
-| DeclareBlock | Event | 通知阻塞发生 |
-| ResolveBlock | Event | 通知阻塞解除 |
-| DeclareConflict | Veto | 否决/阻断流转 |
-| EscalateToHuman | ApprovalRequest | 请求人类审批 |
-| SyncStatus | Event | 通知状态同步 |
-| RegisterProject | Event | 通知项目登记 |
-| RegisterActor | Event | 通知 actor 登记 |
-| Heartbeat | Event | 通知心跳（可选） |
-| RenewClaim | Event | 通知续租（可选） |
-| ReleaseClaim | Event | 通知释放认领（可选） |
-| WatchdogSync | Event | 通知看门狗同步（可选） |
-| RecordDecision | Event | 记录决策到审计 |
-| RecordRisk | Event | 记录风险到审计 |
-| RecordDeviation | Event | 记录偏差到审计 |
+| IssuePlan | Command | SPEC issues project plan (plan mode, optional) |
+| RevisePlan | Command | SPEC revises project plan (supersedes old plan) |
+| IssueSpec | Command | Requires IMPL/TEST to perform implementation |
+| DefineInterface | Command | Requires IMPL to implement per interface |
+| AcceptStage | ApprovalDecision | SPEC acceptance-pass decision |
+| RejectStage | ApprovalDecision | SPEC acceptance-fail decision |
+| ClaimTask | Event | Notifies claim made (no response required) |
+| SubmitImpl | Command | Requires TEST to perform preliminary acceptance |
+| SubmitSelfCheck | Event | Notifies self-check complete (for TEST reference) |
+| RequestSpecClarification | Query | Read-only query of spec doubts |
+| SubmitTestReport | Response | Preliminary acceptance receipt for SubmitImpl |
+| RequestImplFix | Command | Requires IMPL to fix defects |
+| SubmitAdversarialReport | Event | Notifies adversarial test result |
+| SubmitRegressionReport | Event | Notifies regression test result |
+| DeclareBlock | Event | Notifies block occurred |
+| ResolveBlock | Event | Notifies block resolved |
+| DeclareConflict | Veto | Veto / blocks flow |
+| EscalateToHuman | ApprovalRequest | Requests human approval |
+| SyncStatus | Event | Notifies status sync |
+| RegisterProject | Event | Notifies project registration |
+| RegisterActor | Event | Notifies actor registration |
+| Heartbeat | Event | Notifies heartbeat (optional) |
+| RenewClaim | Event | Notifies lease renewal (optional) |
+| ReleaseClaim | Event | Notifies claim release (optional) |
+| WatchdogSync | Event | Notifies watchdog sync (optional) |
+| RecordDecision | Event | Records decision to audit |
+| RecordRisk | Event | Records risk to audit |
+| RecordDeviation | Event | Records deviation to audit |
 
 ---
 
-## 二、规范类动作（SPEC → IMPL / TEST）
+## 2. Spec Actions (SPEC -> IMPL / TEST)
 
-### 2.1 IssueSpec — 下发规范
+### 2.1 IssueSpec — Issue Specification
 
-| 字段 | 值 |
+| Field | Value |
 |------|-----|
 | from | SPEC |
 | to | IMPL, TEST |
 | risk_level | Medium |
-| 必需payload | 规范文档路径、阶段标识、验收标准、依赖列表 |
+| required payload | spec doc path, stage identifier, acceptance criteria, dependency list |
 
-**信封payload模板**：
+**Envelope payload template**:
 ```markdown
 ## Payload
-### 规范来源
-- 规范文件路径：{L2.5_xx路径}
-- 阶段：{S2_4等}
-- 优先级：{P0/P1/P2}
+### Spec Source
+- Spec file path: {L2.5_xx path}
+- Stage: {S2_4 etc.}
+- Priority: {P0/P1/P2}
 
-### 验收标准
-1. {具体可验证的标准}
+### Acceptance Criteria
+1. {specific verifiable criteria}
 2. ...
 
-### 依赖
-- 前置阶段：{S2_3E等}
-- 前置信封：{ENVELOPE_ID}
-- 外部依赖：{无/具体说明}
+### Dependencies
+- Preceding stage: {S2_3E etc.}
+- Preceding envelope: {ENVELOPE_ID}
+- External dependencies: {none / specific description}
 
-### 约束
-- 禁止行为：{具体禁止}
-- 资源限制：{时间/文件数/测试数}
+### Constraints
+- Forbidden behaviors: {specific prohibition}
+- Resource limits: {time/file count/test count}
 ```
 
-**IMPL收到后必须**：
-1. 在 `CLAIMS/` 创建 `ClaimTask` 记录
-2. 评估可行性，标记 `Accepted` / `Conditional` / `Blocked`
-3. 更新 BLACKBOARD.md
+**IMPL shall, upon receipt**:
+1. Create a `ClaimTask` record in `CLAIMS/`
+2. Assess feasibility, mark `Accepted` / `Conditional` / `Blocked`
+3. Update BLACKBOARD.md
 
-### 2.2 DefineInterface — 定义跨阶段接口
+### 2.2 DefineInterface — Define Cross-Stage Interface
 
-| 字段 | 值 |
+| Field | Value |
 |------|-----|
 | from | SPEC |
 | to | IMPL |
 | risk_level | High |
-| 必需payload | 接口Schema、输入输出类型、版本号 |
+| required payload | interface Schema, input/output types, version number |
 
-**用途**：定义阶段间移交接口（如S2_3→S2_4的CapabilityReception）
+**Purpose**: Defines the handoff interface between stages (e.g., CapabilityReception for S2_3 -> S2_4)
 
-**信封payload模板**：
+**Envelope payload template**:
 ```markdown
 ## Payload
-### 接口名称
+### Interface Name
 {InterfaceName}
 
-### 接口Schema
+### Interface Schema
 ```rust
 pub struct {InterfaceName} {
-    // 字段定义
+    // field definitions
 }
 ```
 
-### 版本
+### Version
 - schema_version: "1.0"
 
-### 兼容性
-- 向后兼容：是/否
-- 迁移路径：{描述}
+### Compatibility
+- Backward compatible: yes/no
+- Migration path: {description}
 ```
 
-### 2.3 AcceptStage — 验收通过
+### 2.3 AcceptStage — Acceptance Pass
 
-| 字段 | 值 |
+| Field | Value |
 |------|-----|
 | from | SPEC |
 | to | IMPL, TEST |
 | risk_level | High |
-| 必需payload | 阶段标识、验收结论、条件列表（如有） |
+| required payload | stage identifier, acceptance conclusion, conditions list (if any) |
 
-**前置条件**：
-- IMPL已提交实现（SubmitImpl）
-- TEST已提交初验报告（SubmitTestReport）
-- 无未解决的P0阻塞项
+**Preconditions**:
+- IMPL has submitted implementation (SubmitImpl)
+- TEST has submitted preliminary acceptance report (SubmitTestReport)
+- No unresolved P0 blockers
 
-**必须写入AUDIT/**
+**Must be written to AUDIT/**
 
-### 2.4 RejectStage — 验收不通过
+### 2.4 RejectStage — Acceptance Fail
 
-| 字段 | 值 |
+| Field | Value |
 |------|-----|
 | from | SPEC |
 | to | IMPL |
 | risk_level | High |
-| 必需payload | 阶段标识、拒绝理由、修复要求、回退目标状态 |
+| required payload | stage identifier, rejection reason, fix requirements, rollback target state |
 
-**必须写入AUDIT/**
+**Must be written to AUDIT/**
 
 ---
 
-## 三、实现类动作（IMPL → TEST / SPEC）
+## 3. Implementation Actions (IMPL -> TEST / SPEC)
 
-### 3.1 ClaimTask — 认领任务
+### 3.1 ClaimTask — Claim Task
 
-| 字段 | 值 |
+| Field | Value |
 |------|-----|
 | from | IMPL |
-| to | SPEC（通知） |
+| to | SPEC (notification) |
 | risk_level | Low |
-| 必需payload | 阶段标识、认领方、预期交付物、预估工作量 |
+| required payload | stage identifier, claimer, expected deliverables, estimated effort |
 
-**文件位置**：`CLAIMS/{STAGE}_CLAIM_{CLAIM_ID}.md`
+**File location**: `CLAIMS/{STAGE}_CLAIM_{CLAIM_ID}.md`
 
-**payload模板**：
+**payload template**:
 ```markdown
 ## Payload
-### 认领信息
-- 阶段：{S2_4等}
-- 认领方：IMPL (AI IDE)
-- 关联规范信封：{ENVELOPE_ID}
+### Claim Info
+- Stage: {S2_4 etc.}
+- Claimer: IMPL (AI IDE)
+- Linked spec envelope: {ENVELOPE_ID}
 
-### 预期交付物
-1. 代码文件：{路径列表}
-2. 单元测试：{路径列表}
-3. 自检报告：{路径}
+### Expected Deliverables
+1. Code files: {path list}
+2. Unit tests: {path list}
+3. Self-check report: {path}
 
-### 可行性评估
-- 阻塞项：{无/具体说明}
-- 风险项：{无/具体说明}
-- 条件项：{无/具体说明}
+### Feasibility Assessment
+- Blockers: {none / specific description}
+- Risks: {none / specific description}
+- Conditions: {none / specific description}
 ```
 
-### 3.2 SubmitImpl — 提交实现
+### 3.2 SubmitImpl — Submit Implementation
 
-| 字段 | 值 |
+| Field | Value |
 |------|-----|
 | from | IMPL |
 | to | TEST |
 | risk_level | Medium |
-| 必需payload | 阶段标识、代码变更列表、测试结果、自检报告 |
+| required payload | stage identifier, code change list, test results, self-check report |
 
-**信封payload模板**：
+**Envelope payload template**:
 ```markdown
 ## Payload
-### 实现概要
-- 阶段：{S2_4等}
-- 新增文件：{数量和路径}
-- 修改文件：{数量和路径}
-- 删除文件：{数量和路径}
+### Implementation Summary
+- Stage: {S2_4 etc.}
+- Added files: {count and paths}
+- Modified files: {count and paths}
+- Deleted files: {count and paths}
 
-### 测试结果
-- 单元测试总数：{N}
-- 通过：{N}
-- 失败：{N}
-- 跳过：{N}
+### Test Results
+- Total unit tests: {N}
+- Passed: {N}
+- Failed: {N}
+- Skipped: {N}
 
-### 自检报告
-- 路径：{plans/S2_4_TEST_RESULT_SUMMARY.md等}
-- 关键发现：{摘要}
+### Self-Check Report
+- Path: {plans/S2_4_TEST_RESULT_SUMMARY.md etc.}
+- Key findings: {summary}
 
-### 已知限制
-1. {限制描述}
+### Known Limitations
+1. {limitation description}
 2. ...
 
-### 佐证
-- 佐证路径列表
+### Evidence
+- Evidence path list
 ```
 
-### 3.3 SubmitSelfCheck — 提交自检报告
+### 3.3 SubmitSelfCheck — Submit Self-Check Report
 
-| 字段 | 值 |
+| Field | Value |
 |------|-----|
 | from | IMPL |
 | to | TEST, SPEC |
 | risk_level | Low |
-| 必需payload | 自检报告路径、覆盖率数据、STUB清单 |
+| required payload | self-check report path, coverage data, STUB list |
 
-**用途**：IMPL在SubmitImpl之前或同时提交自检，供TEST参考
+**Purpose**: IMPL submits self-check before or together with SubmitImpl, for TEST reference
 
-### 3.4 RequestSpecClarification — 请求规范澄清
+### 3.4 RequestSpecClarification — Request Spec Clarification
 
-| 字段 | 值 |
+| Field | Value |
 |------|-----|
 | from | IMPL |
 | to | SPEC |
 | risk_level | Low |
-| 必需payload | 阶段标识、疑问点、IMPL建议方案 |
+| required payload | stage identifier, doubt points, IMPL proposed solution |
 
-**用途**：IMPL发现规范不明确时，请求SPEC澄清
+**Purpose**: When IMPL finds spec ambiguous, requests SPEC clarification
 
 ---
 
-## 四、测试类动作（TEST → SPEC / IMPL）
+## 4. Testing Actions (TEST -> SPEC / IMPL)
 
-### 4.1 SubmitTestReport — 提交测试报告
+### 4.1 SubmitTestReport — Submit Test Report
 
-| 字段 | 值 |
+| Field | Value |
 |------|-----|
 | from | TEST |
 | to | SPEC, IMPL |
 | risk_level | Medium |
-| 必需payload | 阶段标识、测试类型、测试结果、初验结论 |
+| required payload | stage identifier, test type, test results, preliminary acceptance conclusion |
 
-**信封payload模板**：
+**Envelope payload template**:
 ```markdown
 ## Payload
-### 测试概要
-- 阶段：{S2_4等}
-- 关联实现信封：{ENVELOPE_ID}
-- 测试类型：{黑盒/白盒/对抗性/回归}
+### Test Summary
+- Stage: {S2_4 etc.}
+- Linked implementation envelope: {ENVELOPE_ID}
+- Test type: {black-box/white-box/adversarial/regression}
 
-### 测试结果
-- 测试用例总数：{N}
-- 通过：{N}
-- 失败：{N}
-- 阻塞：{N}
+### Test Results
+- Total test cases: {N}
+- Passed: {N}
+- Failed: {N}
+- Blocked: {N}
 
-### 初验结论
-- 评定：{PASS / CONDITIONAL / FAIL}
-- 条件列表（如Conditional）：
-  1. {条件描述}
-- 失败原因（如FAIL）：
-  1. {原因描述}
+### Preliminary Acceptance Conclusion
+- Rating: {PASS / CONDITIONAL / FAIL}
+- Conditions list (if Conditional):
+  1. {condition description}
+- Failure reason (if FAIL):
+  1. {reason description}
 
-### 佐证
-- 佐证路径列表
+### Evidence
+- Evidence path list
 ```
 
-### 4.2 RequestImplFix — 请求实现修复
+### 4.2 RequestImplFix — Request Implementation Fix
 
-| 字段 | 值 |
+| Field | Value |
 |------|-----|
 | from | TEST |
 | to | IMPL |
 | risk_level | Medium |
-| 必需payload | 阶段标识、缺陷列表、严重程度、复现步骤 |
+| required payload | stage identifier, defect list, severity, reproduction steps |
 
-### 4.3 SubmitAdversarialReport — 提交对抗性测试报告
+### 4.3 SubmitAdversarialReport — Submit Adversarial Test Report
 
-| 字段 | 值 |
+| Field | Value |
 |------|-----|
 | from | TEST |
 | to | SPEC, IMPL |
 | risk_level | High |
-| 必需payload | 攻击向量、测试结果、漏洞评级、修复建议 |
+| required payload | attack vectors, test results, vulnerability rating, fix suggestions |
 
-**必须写入AUDIT/**
+**Must be written to AUDIT/**
 
-### 4.4 SubmitRegressionReport — 提交回归测试报告
+### 4.4 SubmitRegressionReport — Submit Regression Test Report
 
-| 字段 | 值 |
+| Field | Value |
 |------|-----|
 | from | TEST |
 | to | SPEC, IMPL |
 | risk_level | Medium |
-| 必需payload | 回归范围、测试结果、是否引入新缺陷 |
+| required payload | regression scope, test results, whether new defects introduced |
 
 ---
 
-## 五、协调类动作（任意方 → 相关方）
+## 5. Coordination Actions (Any party -> Relevant parties)
 
-### 5.1 DeclareBlock — 声明阻塞
+### 5.1 DeclareBlock — Declare Block
 
-| 字段 | 值 |
+| Field | Value |
 |------|-----|
-| from | 任意方 |
-| to | 相关方 |
+| from | Any party |
+| to | Relevant parties |
 | risk_level | Medium |
-| 必需payload | 阶段标识、阻塞原因、阻塞源、预期解除条件 |
+| required payload | stage identifier, block reason, block source, expected release conditions |
 
-**必须更新BLACKBOARD.md状态为Blocked**
+**Must update BLACKBOARD.md status to Blocked**
 
-### 5.2 ResolveBlock — 解除阻塞
+### 5.2 ResolveBlock — Resolve Block
 
-| 字段 | 值 |
+| Field | Value |
 |------|-----|
-| from | 阻塞发现方 |
-| to | 相关方 |
+| from | Block discoverer |
+| to | Relevant parties |
 | risk_level | Medium |
-| 必需payload | 阶段标识、解除方式、解除后状态 |
+| required payload | stage identifier, release method, post-release state |
 
-**必须写入AUDIT/**
+**Must be written to AUDIT/**
 
-### 5.3 DeclareConflict — 声明冲突
+### 5.3 DeclareConflict — Declare Conflict
 
-| 字段 | 值 |
+| Field | Value |
 |------|-----|
-| from | 任意方 |
-| to | 相关方 + 人类 |
+| from | Any party |
+| to | Relevant parties + human |
 | risk_level | High |
-| 必需payload | 冲突描述、涉及方、涉及信封、建议解决方式 |
+| required payload | conflict description, involved parties, involved envelopes, suggested resolution |
 
-**必须写入AUDIT/**
+**Must be written to AUDIT/**
 
-### 5.4 EscalateToHuman — 升级至人类
+### 5.4 EscalateToHuman — Escalate to Human
 
-| 字段 | 值 |
+| Field | Value |
 |------|-----|
-| from | 任意方 |
-| to | 人类 |
+| from | Any party |
+| to | Human |
 | risk_level | High |
-| 必需payload | 问题描述、已尝试方案、需要人类决策的内容 |
+| required payload | problem description, attempted solutions, content needing human decision |
 
-### 5.5 SyncStatus — 同步状态
+### 5.5 SyncStatus — Sync Status
 
-| 字段 | 值 |
+| Field | Value |
 |------|-----|
-| from | 任意方 |
-| to | 全体 |
+| from | Any party |
+| to | All |
 | risk_level | Low |
-| 必需payload | 当前工作状态、进度百分比、下一步计划 |
+| required payload | current work status, progress percentage, next-step plan |
 
-**用途**：定期同步，防止信息不对称
+**Purpose**: Periodic sync to prevent information asymmetry
 
-### 5.6 RegisterProject — 登记项目空间
+### 5.6 RegisterProject — Register Project Space
 
-| 字段 | 值 |
+| Field | Value |
 |------|-----|
 | from | HUMAN / SPEC |
 | to | ALL |
 | risk_level | Medium |
-| 必需payload | project_id、workspace_root、path_fingerprint、artifact_policy、allowed_roots |
+| required payload | project_id, workspace_root, path_fingerprint, artifact_policy, allowed_roots |
 
-**用途**：为实际开发项目创建 `PROJECTS/{project_id}/` 协作空间。
+**Purpose**: Lets actual development projects create a `PROJECTS/{project_id}/` collaboration space.
 
-**规则**：
-- `artifact_policy` 必须为 `WorkspaceOnly`，项目产出物保留在工作目录。
-- `BLACKBOARD.md` 只记录文件名、相对路径、hash 和短摘要。
-- 项目登记后，AI IDE 必须在该项目空间内处理对应任务。
+**Rules**:
+- `artifact_policy` shall be `WorkspaceOnly`; project artifacts remain in the working directory.
+- `BLACKBOARD.md` records only file name, relative path, hash, and short summary.
+- After project registration, AI IDE shall process corresponding tasks within that project space.
 
-### 5.7 RegisterActor — 登记项目参与方
+### 5.7 RegisterActor — Register Project Participant
 
-| 字段 | 值 |
+| Field | Value |
 |------|-----|
-| from | 任意 actor / HUMAN |
+| from | Any actor / HUMAN |
 | to | SPEC / HUMAN |
 | risk_level | Medium |
-| 必需payload | actor_id、role、ai_ide、workspace_root_seen、path_fingerprint_seen、expires_at |
+| required payload | actor_id, role, ai_ide, workspace_root_seen, path_fingerprint_seen, expires_at |
 
-**用途**：声明某个 AI IDE 或人类角色参与某个项目空间。
+**Purpose**: Declares that an AI IDE or human role participates in a project space.
 
-**规则**：
-- 未登记或过期 actor 不得处理项目任务。
-- actor 登记是软鉴权，不替代系统权限或 Git 权限。
-- 角色仍必须遵守 `ACTIONS.md` 权限矩阵。
+**Rules**:
+- Unregistered or expired actors shall not process project tasks.
+- Actor registration is soft authentication; it does not replace system permissions or Git permissions.
+- Roles shall still comply with the `ACTIONS.md` permission matrix.
 
 ---
 
-## 五.5、定时类动作（Timer / Lease / Watchdog）
+## 5.5 Timer Actions (Timer / Lease / Watchdog)
 
-### 5.8 Heartbeat — 心跳
+### 5.8 Heartbeat — Heartbeat
 
-| 字段 | 值 |
+| Field | Value |
 |------|-----|
-| from | 任意 actor |
+| from | Any actor |
 | to | HEARTBEAT/ |
 | risk_level | Low |
-| 必需payload | actor_id、role、timer_profile、status、current_stage、active_claim_id、last_heartbeat_at、next_tick_at |
+| required payload | actor_id, role, timer_profile, status, current_stage, active_claim_id, last_heartbeat_at, next_tick_at |
 
-心跳格式见 `HEARTBEAT/README.md`。
+Heartbeat format see `HEARTBEAT/README.md`.
 
-### 5.9 RenewClaim — 续租
+### 5.9 RenewClaim — Renew Lease
 
-| 字段 | 值 |
+| Field | Value |
 |------|-----|
 | from | Claim owner |
 | to | CLAIMS/ |
 | risk_level | Low / Medium |
-| 必需payload | claim_id、old_expires_at、new_expires_at、heartbeat_at、continuation status |
+| required payload | claim_id, old_expires_at, new_expires_at, heartbeat_at, continuation status |
 
-续租必须发生在过期前。过期后续做必须记录 gap，并由 WATCHDOG 或 SPEC 判定是否可继续。
+Renewal shall occur before expiry. Post-expiry renewal shall record a gap, and WATCHDOG or SPEC shall decide whether to continue.
 
-### 5.10 ReleaseClaim — 释放认领
+### 5.10 ReleaseClaim — Release Claim
 
-| 字段 | 值 |
+| Field | Value |
 |------|-----|
 | from | Claim owner |
 | to | CLAIMS/ + BLACKBOARD |
 | risk_level | Low |
-| 必需payload | claim_id、release_reason、handoff/evidence paths |
+| required payload | claim_id, release_reason, handoff/evidence paths |
 
-### 5.11 WatchdogSync — 看门狗同步
+### 5.11 WatchdogSync — Watchdog Sync
 
-| 字段 | 值 |
+| Field | Value |
 |------|-----|
-| from | WATCHDOG / 任意执行方 |
+| from | WATCHDOG / any executor |
 | to | ALL |
 | risk_level | Low / Medium / High |
-| 必需payload | stale claims、stale heartbeat、state conflicts、missing audit/evidence、recommended action |
+| required payload | stale claims, stale heartbeat, state conflicts, missing audit/evidence, recommended action |
 
-看门狗规则见 `WATCHDOG.md`。
+Watchdog rules see `WATCHDOG.md`.
 
 ---
 
-## 六、审计类动作（任意方 → AUDIT/）
+## 6. Audit Actions (Any party -> AUDIT/)
 
-### 6.1 RecordDecision — 记录决策
+### 6.1 RecordDecision — Record Decision
 
-| 字段 | 值 |
+| Field | Value |
 |------|-----|
-| from | 任意方 |
+| from | Any party |
 | to | AUDIT/ |
-| risk_level | 按实际 |
-| 必需payload | 决策内容、决策理由、影响范围 |
+| risk_level | per actual |
+| required payload | decision content, decision rationale, impact scope |
 
-### 6.2 RecordRisk — 记录风险
+### 6.2 RecordRisk — Record Risk
 
-| 字段 | 值 |
+| Field | Value |
 |------|-----|
-| from | 任意方 |
-| to | AUDIT/ |
-| risk_level | Medium+ |
-| 必需payload | 风险描述、风险级别、缓解措施、责任人 |
-
-### 6.3 RecordDeviation — 记录偏差
-
-| 字段 | 值 |
-|------|-----|
-| from | 任意方 |
+| from | Any party |
 | to | AUDIT/ |
 | risk_level | Medium+ |
-| 必需payload | 偏差描述、与规范的差异、理由、影响评估 |
+| required payload | risk description, risk level, mitigation measures, responsible person |
 
-### 6.4 IssuePlan — 下发项目计划
+### 6.3 RecordDeviation — Record Deviation
 
-| 字段 | 值 |
+| Field | Value |
+|------|-----|
+| from | Any party |
+| to | AUDIT/ |
+| risk_level | Medium+ |
+| required payload | deviation description, difference from spec, rationale, impact assessment |
+
+### 6.4 IssuePlan — Issue Project Plan
+
+| Field | Value |
 |------|-----|
 | action | IssuePlan |
 | message_type | Command |
@@ -485,14 +539,14 @@ pub struct {InterfaceName} {
 | risk_level | High |
 | reversibility | NeedsHuman |
 | requires_audit | true |
-| 必需payload | plan_id, plan_version, requirements_ref, stage 列表摘要, plan_path, plan_sha256 |
-| 文件名 | PLAN_SPEC_TO_ALL_{TS}.md |
+| required payload | plan_id, plan_version, requirements_ref, stage list summary, plan_path, plan_sha256 |
+| filename | PLAN_SPEC_TO_ALL_{TS}.md |
 
-**用途**：SPEC 在 plan 生成阶段编写完 plan 后，通过此信封下发计划给所有角色。CONSULTANT/QA 复核通过 SyncStatus 信封响应，HUMAN 在本信封上 Accept 后 plan 生效。详见 PLAN.md §五.1。
+**Purpose**: After SPEC finishes writing the plan in the plan-generation stage, it issues the plan to all roles via this envelope. CONSULTANT/QA review responds via SyncStatus envelope; HUMAN Accepts on this envelope to make the plan effective. See PLAN.md §5.1.
 
-### 6.5 RevisePlan — 修订项目计划
+### 6.5 RevisePlan — Revise Project Plan
 
-| 字段 | 值 |
+| Field | Value |
 |------|-----|
 | action | RevisePlan |
 | message_type | Command |
@@ -500,90 +554,90 @@ pub struct {InterfaceName} {
 | risk_level | High |
 | reversibility | NeedsHuman |
 | requires_audit | true |
-| 必需payload | plan_id, supersedes, 修订原因, 影响范围, plan_path, plan_sha256 |
-| 文件名 | PLAN_REVISE_SPEC_TO_ALL_{TS}.md |
+| required payload | plan_id, supersedes, revision reason, impact scope, plan_path, plan_sha256 |
+| filename | PLAN_REVISE_SPEC_TO_ALL_{TS}.md |
 
-**用途**：SPEC 修订已有 plan 时通过此信封下发。supersedes 字段引用旧 IssuePlan 信封 ID。已 Accepted 的 stage 不受修订影响。详见 PLAN.md §五.2。
+**Purpose**: SPEC issues via this envelope when revising an existing plan. The supersedes field references the old IssuePlan envelope ID. Already-Accepted stages are not affected by the revision. See PLAN.md §5.2.
 
 ---
 
-## 七、动作与角色权限矩阵
+## 7. Action and Role Permission Matrix
 
-| 动作 | SPEC | IMPL | TEST | CONSULTANT | QA | 人类 |
+| Action | SPEC | IMPL | TEST | CONSULTANT | QA | Human |
 |------|------|------|------|------------|-----|------|
-| IssuePlan | **发起** | 接收 | 接收 | 参考 | 参考 | 批准 |
-| RevisePlan | **发起** | 接收 | 接收 | 参考 | 参考 | 批准 |
-| IssueSpec | **发起** | 接收 | 接收 | 参考 | — | 裁决 |
-| DefineInterface | **发起** | 接收 | 参考 | 参考 | — | 裁决 |
-| AcceptStage | **发起** | 接收 | 接收 | 参考 | 参考 | 批准 |
-| RejectStage | **发起** | 接收 | 接收 | 参考 | 参考 | 批准 |
-| ClaimTask | 通知 | **发起** | 参考 | — | — | — |
-| SubmitImpl | 参考 | **发起** | 接收 | — | — | — |
-| SubmitSelfCheck | 参考 | **发起** | 参考 | — | — | — |
-| RequestSpecClarification | **接收** | 发起 | — | 参考 | — | — |
-| SubmitTestReport | 接收 | 接收 | **发起** | 参考 | 参考 | — |
-| RequestImplFix | — | **接收** | 发起 | — | — | — |
-| SubmitAdversarialReport | 接收 | 接收 | **发起** | 参考 | 参考 | — |
-| SubmitRegressionReport | 接收 | 接收 | **发起** | — | 参考 | — |
-| DeclareBlock | 发起/接收 | 发起/接收 | 发起/接收 | 发起/接收 | 发起/接收 | 裁决 |
-| ResolveBlock | 发起/接收 | 发起/接收 | 发起/接收 | 发起/接收 | 发起/接收 | 批准 |
-| DeclareConflict | 发起/接收 | 发起/接收 | 发起/接收 | 发起/接收 | 发起/接收 | **裁决** |
-| EscalateToHuman | — | — | — | — | — | **接收** |
-| SyncStatus | 发起 | 发起 | 发起 | 发起 | 发起 | — |
-| RegisterProject | 发起 | 接收 | 接收 | — | — | 发起/批准 |
-| RegisterActor | 接收/批准 | 发起 | 发起 | 发起 | 发起 | 发起/批准 |
-| Heartbeat | 发起 | 发起 | 发起 | 发起（可选） | 发起（可选） | — |
-| RenewClaim | 接收/发起 | 发起 | 发起 | — | — | — |
-| ReleaseClaim | 接收/发起 | 发起 | 发起 | — | — | — |
-| WatchdogSync | 发起/接收 | 发起/接收 | 发起/接收 | 发起/接收 | **发起** | 裁决 |
-| RecordDecision | 发起 | 发起 | 发起 | 发起 | 发起 | 发起 |
-| RecordRisk | 发起 | 发起 | 发起 | 发起 | 发起 | 发起 |
-| RecordDeviation | 发起 | 发起 | 发起 | 发起 | 发起 | 发起 |
+| IssuePlan | **Initiate** | Receive | Receive | Reference | Reference | Approve |
+| RevisePlan | **Initiate** | Receive | Receive | Reference | Reference | Approve |
+| IssueSpec | **Initiate** | Receive | Receive | Reference | — | Adjudicate |
+| DefineInterface | **Initiate** | Receive | Reference | Reference | — | Adjudicate |
+| AcceptStage | **Initiate** | Receive | Receive | Reference | Reference | Approve |
+| RejectStage | **Initiate** | Receive | Receive | Reference | Reference | Approve |
+| ClaimTask | Notify | **Initiate** | Reference | — | — | — |
+| SubmitImpl | Reference | **Initiate** | Receive | — | — | — |
+| SubmitSelfCheck | Reference | **Initiate** | Reference | — | — | — |
+| RequestSpecClarification | **Receive** | Initiate | — | Reference | — | — |
+| SubmitTestReport | Receive | Receive | **Initiate** | Reference | Reference | — |
+| RequestImplFix | — | **Receive** | Initiate | — | — | — |
+| SubmitAdversarialReport | Receive | Receive | **Initiate** | Reference | Reference | — |
+| SubmitRegressionReport | Receive | Receive | **Initiate** | — | Reference | — |
+| DeclareBlock | Initiate/Receive | Initiate/Receive | Initiate/Receive | Initiate/Receive | Initiate/Receive | Adjudicate |
+| ResolveBlock | Initiate/Receive | Initiate/Receive | Initiate/Receive | Initiate/Receive | Initiate/Receive | Approve |
+| DeclareConflict | Initiate/Receive | Initiate/Receive | Initiate/Receive | Initiate/Receive | Initiate/Receive | **Adjudicate** |
+| EscalateToHuman | — | — | — | — | — | **Receive** |
+| SyncStatus | Initiate | Initiate | Initiate | Initiate | Initiate | — |
+| RegisterProject | Initiate | Receive | Receive | — | — | Initiate/Approve |
+| RegisterActor | Receive/Approve | Initiate | Initiate | Initiate | Initiate | Initiate/Approve |
+| Heartbeat | Initiate | Initiate | Initiate | Initiate (optional) | Initiate (optional) | — |
+| RenewClaim | Receive/Initiate | Initiate | Initiate | — | — | — |
+| ReleaseClaim | Receive/Initiate | Initiate | Initiate | — | — | — |
+| WatchdogSync | Initiate/Receive | Initiate/Receive | Initiate/Receive | Initiate/Receive | **Initiate** | Adjudicate |
+| RecordDecision | Initiate | Initiate | Initiate | Initiate | Initiate | Initiate |
+| RecordRisk | Initiate | Initiate | Initiate | Initiate | Initiate | Initiate |
+| RecordDeviation | Initiate | Initiate | Initiate | Initiate | Initiate | Initiate |
 
-**CONSULTANT 角色权限说明**：可发起 SyncStatus/DeclareBlock/DeclareConflict/RecordDecision/RecordRisk/RecordDeviation/WatchdogSync/Heartbeat；可参考 SPEC/TEST 的验收和测试动作；不发起 IssueSpec/SubmitImpl/SubmitTestReport/AcceptStage/RejectStage（不替代 SPEC/IMPL/TEST 的核心职责）。
+**CONSULTANT role permission notes**: May initiate SyncStatus/DeclareBlock/DeclareConflict/RecordDecision/RecordRisk/RecordDeviation/WatchdogSync/Heartbeat; may reference SPEC/TEST acceptance and testing actions; shall not initiate IssueSpec/SubmitImpl/SubmitTestReport/AcceptStage/RejectStage (does not replace core responsibilities of SPEC/IMPL/TEST).
 
-**QA 角色权限说明**：可发起 WatchdogSync/DeclareBlock/DeclareConflict/RecordDecision/RecordRisk/RecordDeviation/SyncStatus/Heartbeat；可参考 AcceptStage/RejectStage/SubmitTestReport；不发起实现和测试类动作（QA 做过程质量审视，不做功能测试）。
-
----
-
-## 八、动作执行检查清单
-
-每个AI IDE在执行动作前必须检查：
-
-1. [ ] 我是否有权限发起此动作？（见权限矩阵）
-2. [ ] 信封格式是否完整？（Header + Payload + Evidence + Status + Audit）
-3. [ ] 文件命名是否符合规则？
-4. [ ] BLACKBOARD.md是否需要更新？
-5. [ ] AUDIT/是否需要记录？
-6. [ ] 是否有前置信封未完成？
-7. [ ] 是否与现有信封冲突？
+**QA role permission notes**: May initiate WatchdogSync/DeclareBlock/DeclareConflict/RecordDecision/RecordRisk/RecordDeviation/SyncStatus/Heartbeat; may reference AcceptStage/RejectStage/SubmitTestReport; shall not initiate implementation and testing actions (QA does process-quality review, not functional testing).
 
 ---
 
-## 九、动作模板快速索引
+## 8. Action Execution Checklist
 
-| 动作 | from→to | 信封文件名模板 |
+Each AI IDE shall check before executing an action:
+
+1. [ ] Do I have permission to initiate this action? (see permission matrix)
+2. [ ] Is the envelope format complete? (Header + Payload + Evidence + Status + Audit)
+3. [ ] Does the file naming comply with the rules?
+4. [ ] Does BLACKBOARD.md need updating?
+5. [ ] Does AUDIT/ need recording?
+6. [ ] Are there preceding envelopes not yet complete?
+7. [ ] Does it conflict with existing envelopes?
+
+---
+
+## 9. Action Template Quick Index
+
+| Action | from->to | Envelope filename template |
 |------|---------|---------------|
-| IssueSpec | SPEC→IMPL,TEST | `{STAGE}_SPEC_TO_IMPL_{TS}.md` |
-| DefineInterface | SPEC→IMPL | `{STAGE}_SPEC_TO_IMPL_{TS}.md` |
-| AcceptStage | SPEC→IMPL,TEST | `{STAGE}_SPEC_TO_IMPL_TEST_{TS}.md` |
-| RejectStage | SPEC→IMPL | `{STAGE}_SPEC_TO_IMPL_{TS}.md` |
-| ClaimTask | IMPL→SPEC | `CLAIMS/{STAGE}_CLAIM_{ID}.md` |
-| SubmitImpl | IMPL→TEST | `{STAGE}_IMPL_TO_TEST_{TS}.md` |
-| SubmitSelfCheck | IMPL→TEST,SPEC | `{STAGE}_IMPL_TO_TEST_SPEC_{TS}.md` |
-| RequestSpecClarification | IMPL→SPEC | `{STAGE}_IMPL_TO_SPEC_{TS}.md` |
-| SubmitTestReport | TEST→SPEC,IMPL | `{STAGE}_TEST_TO_SPEC_IMPL_{TS}.md` |
-| RequestImplFix | TEST→IMPL | `{STAGE}_TEST_TO_IMPL_{TS}.md` |
-| SubmitAdversarialReport | TEST→SPEC,IMPL | `{STAGE}_TEST_TO_SPEC_IMPL_{TS}.md` |
-| SubmitRegressionReport | TEST→SPEC,IMPL | `{STAGE}_TEST_TO_SPEC_IMPL_{TS}.md` |
-| DeclareBlock | 任意→相关 | `{STAGE}_{FROM}_TO_{TO}_{TS}.md` |
-| ResolveBlock | 任意→相关 | `{STAGE}_{FROM}_TO_{TO}_{TS}.md` |
-| DeclareConflict | 任意→相关+人类 | `{STAGE}_{FROM}_TO_ALL_{TS}.md` |
-| EscalateToHuman | 任意→人类 | `{STAGE}_{FROM}_TO_HUMAN_{TS}.md` |
-| SyncStatus | 任意→全体 | `SYNC_{FROM}_{TS}.md` |
-| RegisterProject | HUMAN/SPEC→ALL | `PROJECT_REGISTER_{PROJECT_ID}_{TS}.md` |
-| RegisterActor | 任意→SPEC/HUMAN | `PROJECT_ACTOR_REGISTER_{ACTOR}_{TS}.md` |
-| Heartbeat | 任意→HEARTBEAT | `HEARTBEAT/{ACTOR}.json` |
-| RenewClaim | Claim owner→CLAIMS | `{STAGE}_CLAIM_{ACTOR}_{TS}.md` |
-| ReleaseClaim | Claim owner→CLAIMS | `{STAGE}_CLAIM_{ACTOR}_{TS}.md` |
-| WatchdogSync | WATCHDOG→ALL | `SYNC_WATCHDOG_{TS}.md` |
+| IssueSpec | SPEC->IMPL,TEST | `{STAGE}_SPEC_TO_IMPL_{TS}.md` |
+| DefineInterface | SPEC->IMPL | `{STAGE}_SPEC_TO_IMPL_{TS}.md` |
+| AcceptStage | SPEC->IMPL,TEST | `{STAGE}_SPEC_TO_IMPL_TEST_{TS}.md` |
+| RejectStage | SPEC->IMPL | `{STAGE}_SPEC_TO_IMPL_{TS}.md` |
+| ClaimTask | IMPL->SPEC | `CLAIMS/{STAGE}_CLAIM_{ID}.md` |
+| SubmitImpl | IMPL->TEST | `{STAGE}_IMPL_TO_TEST_{TS}.md` |
+| SubmitSelfCheck | IMPL->TEST,SPEC | `{STAGE}_IMPL_TO_TEST_SPEC_{TS}.md` |
+| RequestSpecClarification | IMPL->SPEC | `{STAGE}_IMPL_TO_SPEC_{TS}.md` |
+| SubmitTestReport | TEST->SPEC,IMPL | `{STAGE}_TEST_TO_SPEC_IMPL_{TS}.md` |
+| RequestImplFix | TEST->IMPL | `{STAGE}_TEST_TO_IMPL_{TS}.md` |
+| SubmitAdversarialReport | TEST->SPEC,IMPL | `{STAGE}_TEST_TO_SPEC_IMPL_{TS}.md` |
+| SubmitRegressionReport | TEST->SPEC,IMPL | `{STAGE}_TEST_TO_SPEC_IMPL_{TS}.md` |
+| DeclareBlock | Any->Relevant | `{STAGE}_{FROM}_TO_{TO}_{TS}.md` |
+| ResolveBlock | Any->Relevant | `{STAGE}_{FROM}_TO_{TO}_{TS}.md` |
+| DeclareConflict | Any->Relevant+Human | `{STAGE}_{FROM}_TO_ALL_{TS}.md` |
+| EscalateToHuman | Any->Human | `{STAGE}_{FROM}_TO_HUMAN_{TS}.md` |
+| SyncStatus | Any->All | `SYNC_{FROM}_{TS}.md` |
+| RegisterProject | HUMAN/SPEC->ALL | `PROJECT_REGISTER_{PROJECT_ID}_{TS}.md` |
+| RegisterActor | Any->SPEC/HUMAN | `PROJECT_ACTOR_REGISTER_{ACTOR}_{TS}.md` |
+| Heartbeat | Any->HEARTBEAT | `HEARTBEAT/{ACTOR}.json` |
+| RenewClaim | Claim owner->CLAIMS | `{STAGE}_CLAIM_{ACTOR}_{TS}.md` |
+| ReleaseClaim | Claim owner->CLAIMS | `{STAGE}_CLAIM_{ACTOR}_{TS}.md` |
+| WatchdogSync | WATCHDOG->ALL | `SYNC_WATCHDOG_{TS}.md` |

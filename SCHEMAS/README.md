@@ -37,3 +37,4 @@
 | heartbeat.schema.json | 心跳 | 心跳结构约束 |
 | evidence.schema.json | 证据 | 证据结构约束 |
 | monitor-status.schema.json | MONITOR/status.json | 看板状态结构约束 |
+| violation.schema.json | VIOLATIONS/*.jsonl | 违规事件日志结构约束（v1.5 新增，非核心附录） |

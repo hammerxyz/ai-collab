@@ -1,8 +1,8 @@
-<!-- 中文说明：健康检查规则。WATCHDOG 只检查，不能验收 / 实现 / 测试 / 冻结。 -->
+<!-- English note: Health-check rules. WATCHDOG only checks; it MUST NOT accept / implement / test / freeze. -->
 
 # AI-COLLAB Watchdog
 
-> **状态：可选参考（v1.1 降级）** | WATCHDOG 为人工触发的检查参考，非自动监控。检查项供 AI IDE 或人类在需要时参考执行。
+> **Status: Optional reference (downgraded in v1.1)** | WATCHDOG is a human-triggered review reference, not automated monitoring. Checks are available for AI IDEs or humans to consult as needed.
 
 ## Purpose
 
@@ -38,12 +38,25 @@ Recommended:
 
 | # | Check | Recommended state |
 |---|-------|-------------------|
-| 15 | actor 认领的 stage 上游未到 `gate_state` | `DeclareConflict` |
-| 16 | 同 stage 同角色 2 个 active claim（stage_scope 冲突） | `DeclareConflict` |
-| 17 | plan 正文写入 `PROJECTS/{project_id}/` 控制面 | `PlanLocationViolation` + 移动到 workspace |
-| 18 | actor 按 plan 推进但 plan 状态非 `Active` | `Blocked` |
-| 19 | `AcceptStage` 时 `qa_gate=required` 但无 QA Pass 信封 | `DeclareConflict` |
-| 20 | `risk_level=High` 且 `consultant_gate=required` 但无 CONSULTANT 签字 | `DeclareConflict` |
+| 15 | Upstream of actor-claimed stage has not reached `gate_state` | `DeclareConflict` |
+| 16 | Two active claims for same stage and role (stage_scope conflict) | `DeclareConflict` |
+| 17 | Plan body written to `PROJECTS/{project_id}/` control plane | `PlanLocationViolation` + move to workspace |
+| 18 | actor advances per plan but plan status is not `Active` | `Blocked` |
+| 19 | At `AcceptStage`, `qa_gate=required` but no QA Pass envelope | `DeclareConflict` |
+| 20 | `risk_level=High` and `consultant_gate=required` but no CONSULTANT signature | `DeclareConflict` |
+
+### Core invariant checks (added in v1.3 / Direction 2 verification framework)
+
+> Confirmed in v1.5 (seven-step arbitration; vacuum-period decision pending community review). State-machine monotonicity is a verification framework that requires global state and is executed by WATCHDOG post hoc. First-order invariants are self-judged by actors and are not listed here.
+
+| # | Check | Recommended state |
+|---|-------|-------------------|
+| 21 | **Control-plane purity violation**: control-plane message did not go through HANDOFF (bypassing the bus), or control plane wrote artifact content instead of a pointer | `DeclareConflict` + log to `VIOLATIONS/` |
+| 22 | **Permission-isolation violation**: the same actor holds multiple roles among SPEC/IMPL/TEST | `DeclareConflict` + log to `VIOLATIONS/` |
+| 23 | **Evidence-traceability violation**: conclusion lacks an evidence chain, or evidence strength is not graded | `DeclareConflict` + log to `VIOLATIONS/` |
+| 24 | **State-machine monotonicity violation** (verification framework): operation caused irreversible entropy increase with no rollback mechanism — e.g., stage regression, tampering with an accepted stage, or overwriting blackboard history | `DeclareConflict` + `EscalateToHuman` + log to `VIOLATIONS/` |
+
+**Violation logging**: when checks 21-24 fire, WATCHDOG writes a violation log entry to `VIOLATIONS/` (schema in `SCHEMAS/violation.schema.json`); `detected_by` is recorded as `WATCHDOG`.
 
 ## Outputs
 

@@ -1,6 +1,6 @@
 # AI-COLLAB 目录结构边界
 
-`AI-COLLAB` 采用“根目录管协议，项目子目录管操作”的结构。
+`AI-COLLAB` 采用"根目录管协议，项目子目录管操作"的结构。
 
 ---
 
@@ -40,12 +40,14 @@ ai-collab/
 │       ├── CLAIMS/           # 项目租约
 │       ├── HEARTBEAT/        # 项目心跳
 │       ├── EVIDENCE/         # 项目证据索引
-│       └── AUDIT/            # 项目审计
+│       ├── AUDIT/            # 项目审计
+│       └── VIOLATIONS/       # 项目违规日志（v1.5 新增，非核心附录）
 ├── HANDOFF/                  # 根级占位目录，不承接具体项目任务
 ├── CLAIMS/                   # 根级占位目录，不承接具体项目任务
 ├── HEARTBEAT/                # 根级占位目录，不承接具体项目任务
 ├── EVIDENCE/                 # 根级占位目录，不承接具体项目任务
-└── AUDIT/                    # 根级占位目录，不承接具体项目任务
+├── AUDIT/                    # 根级占位目录，不承接具体项目任务
+└── VIOLATIONS/               # 根级占位目录，违规日志说明（v1.5 新增）
 ```
 
 ---
@@ -54,21 +56,21 @@ ai-collab/
 
 根目录是控制协议层，负责：
 
-- 说明工具怎么用；
+- 说明工具用法；
 - 定义动作和角色权限；
 - 提供模板；
 - 提供项目空间创建规则；
 - 提供定时器和顺序规则；
 - 提供可选只读监控；
-- 提供空占位目录，方便 WATCHDOG 发现误写根目录的结构偏差。
+- 提供空占位目录，供 WATCHDOG 发现误写根目录的结构偏差。
 
-根目录不应承接新项目的活跃任务。
+根目录不应承接新项目活跃任务。
 
 ---
 
 ## 3. 项目子目录职责
 
-每个实际开发项目必须使用独立子目录：
+每个实际开发项目须用独立子目录：
 
 ```text
 PROJECTS/{project_id}/
@@ -78,12 +80,12 @@ PROJECTS/{project_id}/
 
 - 绑定实际工作目录；
 - 登记参与 actor；
-- 存放项目黑板；
-- 存放项目信封；
-- 存放项目 ClaimLease；
-- 存放项目心跳；
-- 存放项目证据索引；
-- 存放项目审计。
+- 存项目黑板；
+- 存项目信封；
+- 存项目 ClaimLease；
+- 存项目心跳；
+- 存项目证据索引；
+- 存项目审计。
 
 ---
 
@@ -100,13 +102,13 @@ PROJECTS/{project_id}/
 - 构建产物；
 - 真实 evidence artifact。
 
-`ai-collab` 中只保存索引、相对路径、hash、状态和短摘要。
+`ai-collab` 中只存索引、相对路径、hash、状态和短摘要。
 
-### 4.1 plans/ 目录（plan 模式可选）  *(plans/ directory — optional, plan mode only)*
+### 4.1 plans/ 目录（plan 模式可选）
 
-> 仅当项目启用 plan 模式时存在（详见 PLAN.md）。无 plan 的项目不需要此目录。
+> 仅当项目启用 plan 模式时存在（详见 PLAN.md）。无 plan 的项目毋庸此目录。
 
-`{workspace_root}/plans/` 存放 plan 正文（产出物层，不得写入 PROJECTS/{project_id}/ 控制面）：
+`{workspace_root}/plans/` 存放 plan 正文（产出物层，禁写入 PROJECTS/{project_id}/ 控制面）：
 
 ```text
 {workspace_root}/plans/
@@ -128,7 +130,7 @@ PROJECTS/{project_id}/
 ## 5. 新项目创建流程
 
 1. 规范化实际项目路径。
-2. 计算路径 SHA256，取前 8 位作为 `path_hash8`。
+2. 计算路径 SHA256，取前 8 位作 `path_hash8`。
 3. 创建 `project_id = {project_slug}-{path_hash8}`。
 4. 创建 `PROJECTS/{project_id}/`。
 5. 复制 `PROJECTS/_TEMPLATE/PROJECT.md`、`ACTORS.md`、`BLACKBOARD.md`。
@@ -140,13 +142,13 @@ PROJECTS/{project_id}/
 
 ## 6. 根级占位目录
 
-根目录的 `HANDOFF/`、`CLAIMS/`、`HEARTBEAT/`、`EVIDENCE/`、`AUDIT/` 只作为占位目录，不保留具体项目情况。
+根目录的 `HANDOFF/`、`CLAIMS/`、`HEARTBEAT/`、`EVIDENCE/`、`AUDIT/` 只作占位目录，不保留具体项目情况。
 
-如果这些目录中出现非 `README.md` 文件，应视为结构偏差：
+若这些目录中出现非 `README.md` 文件，视为结构偏差：
 
 - 停止处理该根目录文件；
-- 根据项目路径或信封 `project_id` 判断目标项目空间；
+- 据项目路径或信封 `project_id` 判断目标项目空间；
 - 迁移或请求人类迁移到 `PROJECTS/{project_id}/`；
 - 在项目 `AUDIT/` 或 WATCHDOG 同步中记录。
 
-当项目空间已经存在时，AI IDE 必须只使用项目空间。
+项目空间已存在时，AI IDE 须只用项目空间。

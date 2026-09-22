@@ -1,26 +1,20 @@
-# 完整周期样例  *(A full-cycle example)*
+# 完整周期样例
 
-> 用一个小任务演示 SPEC → IMPL → TEST → Accept 全周期的真实落盘产物。形状都可直接照抄，字段说明见 `TEMPLATES/`。
-> *A small task demonstrates the real artifacts of a full SPEC → IMPL → TEST → Accept cycle. The shapes are copy-ready; field details are in `TEMPLATES/`.*
+> 用小任务演示 SPEC → IMPL → TEST → Accept 全周期的真实落盘产物。形状可直接照抄，字段说明见 `TEMPLATES/`。
 
-<!-- 中文：新手照着这一节，就能知道每个阶段该往哪个目录丢什么文件。所有信封从 TEMPLATES/ 对应模板复制后填写。 -->
-<!-- English: By following this section a newcomer learns what file to drop where at each stage. Every envelope is copied from the matching TEMPLATES/ file then filled in. -->
+<!-- 新手照此节即可知每阶段该往哪个目录丢什么文件。所有信封从 TEMPLATES/ 对应模板复制后填写。 -->
 
 ---
 
-## 场景  *(Scenario)*
+## 场景
 
-给 `example-project`（一个 Python CLI 工具）新增 `health` 子命令，打印项目三项关键健康指标（文件数、测试通过率、最近改动数）。
-
-*Add a `health` subcommand to `example-project` (a Python CLI) that prints three key health metrics (file count, test pass rate, recent change count).*
+给 `example-project`（Python CLI 工具）新增 `health` 子命令，打印三项关键健康指标（文件数、测试通过率、最近改动数）。
 
 阶段码统一用 `S1_`，便于在黑板与信封间追踪。
 
-*Stage code `S1_` is used throughout to trace across board and envelopes.*
-
 ---
 
-## 1. SPEC 下发任务  *(SPEC issues the task)*
+## 1. SPEC 下发任务
 
 文件：`PROJECTS/example-project/HANDOFF/S1_ISSUE_SPEC_20260708T100000.md`（从 `TEMPLATES/IssueSpec.md` 复制）
 
@@ -77,11 +71,10 @@
 ```
 
 黑板阶段更新为 `SpecIssued`。
-*Blackboard stage → `SpecIssued`.*
 
 ---
 
-## 2. IMPL 认领并实现  *(IMPL claims and implements)*
+## 2. IMPL 认领并实现
 
 认领：`PROJECTS/example-project/CLAIMS/S1_CLAIM_IMPL_20260708T101500.md`（从 `TEMPLATES/ClaimTask.md` 复制，节选）
 
@@ -137,11 +130,10 @@
 ```
 
 黑板阶段更新为 `ImplSubmitted`。
-*Blackboard stage → `ImplSubmitted`.*
 
 ---
 
-## 3. TEST 独立初验  *(TEST first-verifies)*
+## 3. TEST 独立初验
 
 认领：`CLAIMS/S1_CLAIM_TEST_20260708T111000.md`（同 ClaimTask 模板，`role: TEST`）。
 
@@ -175,11 +167,10 @@ PASS
 ```
 
 黑板阶段更新为 `TestReported`。
-*Blackboard stage → `TestReported`.*
 
 ---
 
-## 4. SPEC 最终验收  *(SPEC accepts)*
+## 4. SPEC 最终验收
 
 文件：`PROJECTS/example-project/HANDOFF/S1_ACCEPT_20260708T114500.md`
 
@@ -206,11 +197,10 @@ PASS
 ```
 
 黑板阶段更新为 `Accepted`，本周期结束。
-*Blackboard stage → `Accepted`; cycle complete.*
 
 ---
 
-## 黑板阶段时间线  *(Blackboard stage timeline)*
+## 黑板阶段时间线
 
 | 顺序 | 阶段 | 触发动作 |
 |---|---|---|
@@ -221,29 +211,17 @@ PASS
 | 5 | `TestReported` | TEST 提交 SubmitTestReport |
 | 6 | `Accepted` | SPEC 提交 AcceptStage |
 
-| # | Stage | Trigger |
-|---|---|---|
-| 1 | `SpecIssued` | SPEC issues IssueSpec |
-| 2 | `ImplClaimed` | IMPL creates ClaimLease |
-| 3 | `ImplSubmitted` | IMPL submits SubmitImpl |
-| 4 | `TestClaimed` | TEST creates ClaimLease |
-| 5 | `TestReported` | TEST submits SubmitTestReport |
-| 6 | `Accepted` | SPEC submits AcceptStage |
-
 ---
 
-## 关键提醒  *(Key reminders)*
+## 关键提醒
 
-- 每个信封从 `TEMPLATES/` 对应模板复制，不要凭空造字段——`SCHEMAS/` 会校验。
-- *Copy every envelope from the matching `TEMPLATES/` file; don't invent fields — `SCHEMAS/` validates them.*
+- 每个信封从 `TEMPLATES/` 对应模板复制，禁凭空造字段——`SCHEMAS/` 会校验。
 - `sequence_no` 在同一项目内递增，便于依赖追踪。
-- *`sequence_no` increments within a project for dependency tracking.*
 - 想看全局进度：先读 `BLACKBOARD.md`，再看 `HANDOFF/` 最新信封。
-- *To see overall progress: read `BLACKBOARD.md` first, then the latest envelope in `HANDOFF/`.*
 
 ---
 
-## 场景二：plan 驱动模式  *(Scenario 2: plan-driven mode)*
+## 场景二：plan 驱动模式
 
 > 同一需求（给 CLI 加 health 子命令）用 plan 模式跑一遍，对比场景一可看出差异。
 > 详见 PLAN.md 协议。
@@ -265,7 +243,7 @@ PASS
     └── S2/                           # 假设 S2 是文档 stage，结构类似
 ```
 
-### 步骤 1：HUMAN 写需求  *(Step 1: HUMAN writes requirements)*
+### 步骤 1：HUMAN 写需求
 
 HUMAN 在 `{workspace_root}/requirements.md` 写：
 
@@ -283,7 +261,7 @@ HUMAN 在 `{workspace_root}/requirements.md` 写：
 
 HUMAN 在 PROJECT.md 加 `requirements_ref: requirements.md`，唤醒 SPEC："读 requirements，生成 plan"。
 
-### 步骤 2：SPEC 生成 plan  *(Step 2: SPEC generates plan)*
+### 步骤 2：SPEC 生成 plan
 
 SPEC 读 requirements.md，在 plans/ 下编写：
 - PLAN.md（含 S1: health 子命令实现，S2: 文档更新）
@@ -320,7 +298,7 @@ SPEC 发 IssuePlan 信封到 HANDOFF/PLAN_SPEC_TO_ALL_20260725T1030.md：
   - human_accept_required: true
 ```
 
-### 步骤 3：CONSULTANT + QA 复核  *(Step 3: CONSULTANT + QA review)*
+### 步骤 3：CONSULTANT + QA 复核
 
 CONSULTANT 读 consultant_guide.md + PLAN.md，复核走势，发 SyncStatus 信封：
 
@@ -350,7 +328,7 @@ QA 读 qa_checklist.md + PLAN.md，复核合规性，发 SyncStatus 信封：
 - comment: plan 字段完整，file_scope 无重叠，门控配置合理
 ```
 
-### 步骤 4：HUMAN Accept  *(Step 4: HUMAN accepts)*
+### 步骤 4：HUMAN Accept
 
 HUMAN 收齐 CONSULTANT + QA 签字，在 IssuePlan 信封上 Accept：
 
@@ -364,7 +342,7 @@ HUMAN 收齐 CONSULTANT + QA 签字，在 IssuePlan 信封上 Accept：
 
 SPEC 在 BLACKBOARD.md 顶部写 `active_plan: PLAN-20260725-001`。plan 生效。
 
-### 步骤 5：IMPL 按 plan 推进 S1  *(Step 5: IMPL advances S1 per plan)*
+### 步骤 5：IMPL 按 plan 推进 S1
 
 IMPL 轮询唤醒：
 1. 读 BLACKBOARD.md -> active_plan=PLAN-20260725-001，plan 状态 Active
@@ -376,9 +354,9 @@ IMPL 轮询唤醒：
 7. 写 SubmitImpl 信封（to: TEST，evidence_ref 引用 EVIDENCE/E1.md）
 8. 更新 BLACKBOARD.md（只动 S1 行，revision+1）
 
-IMPL 不必等 SPEC 发 IssueSpec——prompt 文件就是任务源。
+IMPL 毋庸等 SPEC 发 IssueSpec——prompt 文件即任务源。
 
-### 步骤 6：TEST 按 plan 推进 S1  *(Step 6: TEST verifies S1 per plan)*
+### 步骤 6：TEST 按 plan 推进 S1
 
 TEST 轮询唤醒：
 1. 读 BLACKBOARD.md -> S1 状态=ImplSubmitted
@@ -390,7 +368,7 @@ TEST 轮询唤醒：
 
 TEST 不抄 IMPL 的 Implementation Hints，保持独立性。
 
-### 步骤 7：QA stage 门控  *(Step 7: QA stage gate)*
+### 步骤 7：QA stage 门控
 
 qa_gate=required，QA 读 qa_checklist.md + S1 的信封/证据：
 - 检查 SubmitImpl 是否附 evidence_ref ✓
@@ -410,7 +388,7 @@ QA 发 SyncStatus 信封：
 - verdict: Pass
 ```
 
-### 步骤 8：SPEC AcceptStage  *(Step 8: SPEC accepts stage)*
+### 步骤 8：SPEC AcceptStage
 
 SPEC 读 plans/S1/acceptance.md 的 Pre-acceptance Gates：
 1. [x] IMPL 的 SubmitImpl 信封存在且 status=Submitted
@@ -446,5 +424,5 @@ S1 完成，BLACKBOARD.md 中 S1 状态=Accepted。S2（文档 stage）自动可
 | 多角色 prompt | 单一 IssueSpec 共享 | 每 role 独立 prompt 文件 |
 | 推进方式 | SPEC 主动下发 | actor 轮询自主推进 |
 | 门控 | SPEC 自行判断 | qa_gate/consultant_gate 显式字段 |
-| 启动成本 | 低（SPEC 直接发） | 高（需生成 plan + 复核 + HUMAN Accept） |
+| 启动成本 | 低（SPEC 直接发） | 高（须生成 plan + 复核 + HUMAN Accept） |
 | 适合场景 | 单次任务、探索性 | 多 stage 项目、可编排 |

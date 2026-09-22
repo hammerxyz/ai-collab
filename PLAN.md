@@ -1,50 +1,40 @@
-# AI-COLLAB 项目计划协议（Project Plan Protocol）  *(Project Plan Protocol)*
+# AI-COLLAB 项目计划协议
 
 > 版本：1.0 | 生效日期：2026-07-25 | 状态：可选扩展（随 ai-collab v1.2 发布；不修改 v1.1 核心协议）
-> Version: 1.0 | Effective: 2026-07-25 | Status: optional extension (shipped with ai-collab v1.2; does not modify the v1.1 core protocol)
 > 依赖：PROTOCOL.md v1.1、ACTIONS.md、ORDERING.md、STRUCTURE.md
-> Depends on: PROTOCOL.md v1.1, ACTIONS.md, ORDERING.md, STRUCTURE.md
 
 ---
 
-## 一、定位与边界  *(I. Positioning and boundary)*
+## 一、定位与边界
 
-### 1.1 一句话定位  *(One-line positioning)*
+### 1.1 一句话定位
 
-Plan 是 SPEC 预先编排的"stage 序列 + 各角色 prompt 源"，让多 actor 在轮询唤醒时能基于详细 prompt 自主推进，而不必每次等 SPEC 现写 IssueSpec。
+Plan 是 SPEC 预先编排的"stage 序列 + 各角色 prompt 源"，让多 actor 轮询唤醒时基于详细 prompt 自主推进，毋庸每次等 SPEC 现写 IssueSpec。
 
-Plan is a stage sequence plus per-role prompt sources pre-arranged by SPEC, so multiple actors can autonomously advance on poll wake-up based on detailed prompts, instead of waiting for SPEC to write IssueSpec on demand each time.
-
-### 1.2 是什么 / 不是什么  *(What it is, and is not)*
+### 1.2 是什么 / 不是什么
 
 - **是产出物**：plan 正文存放在 {workspace_root}/plans/，归属产出物层（对齐 PROTOCOL.md §2.2、PROJECTS/README.md §7）。
 - **是可选机制**：无 plan 的项目继续走原 SPEC->IssueSpec 流程；有 plan 的项目可由 actor 轮询推进。
-- **是编排层，不是执行层**：plan 描述 stage 期望序列和角色 prompt，不替代信封、不替代状态机、不替代 AcceptStage 验收。
-- **不是运行时**：plan 不引入调度器、不引入脚本、不引入自动推进；所有推进仍由 actor 唤醒后自觉按协议执行。
-- **不是规范替代物**：plan 引用 spec，不替代 spec。每个 stage 仍需 S{N}/spec.md 作为规范正文。
+- **是编排层，非执行层**：plan 描述 stage 期望序列及角色 prompt，不替代信封、状态机、AcceptStage 验收。
+- **非运行时**：plan 不引入调度器、脚本、自动推进；所有推进仍由 actor 唤醒后自觉按协议执行。
+- **非规范替代物**：plan 引用 spec，不替代 spec。每个 stage 仍须 S{N}/spec.md 作规范正文。
 
-- *Is an artifact*: plan body lives in {workspace_root}/plans/, belonging to the artifact tier.
-- *Is optional*: projects without plan keep the original SPEC->IssueSpec flow; projects with plan let actors advance via polling.
-- *Is orchestration layer, not execution layer*: plan describes expected stage sequence and role prompts; it does not replace envelopes, the state machine, or AcceptStage acceptance.
-- *Is not a runtime*: plan introduces no scheduler, no script, no auto-advance; all progress still depends on actors voluntarily following the protocol after wake-up.
-- *Is not a spec replacement*: plan references spec, never replaces it. Each stage still requires S{N}/spec.md as the spec body.
-
-### 1.3 与现有协议的关系  *(Relationship with existing protocol)*
+### 1.3 与现有协议的关系
 
 | 现有机制 | plan 与之的关系 |
 |---------|----------------|
-| Envelope（信封） | plan 通过 IssuePlan / RevisePlan 信封下发，不绕过总线 |
+| Envelope（信封） | plan 经 IssuePlan / RevisePlan 信封下发，不绕过总线 |
 | BLACKBOARD.md（黑板） | 黑板顶部加 active_plan 指针，不新增控制面文件 |
-| IssueSpec（下发规范） | plan 的 S{N}/spec.md 等价于 IssueSpec 的 payload 源；有 plan 时 SPEC 不必每 stage 现写 IssueSpec |
+| IssueSpec（下发规范） | plan 的 S{N}/spec.md 等价于 IssueSpec 的 payload 源；有 plan 时 SPEC 毋庸每 stage 现写 IssueSpec |
 | ClaimLease（租约） | plan 的 file_scope 直接复制到 ClaimTask，复用现有冲突检测 |
 | AcceptStage（验收） | plan 不自动推进 stage，验收权仍归 SPEC，门控见 §6 |
 | 仲裁链 L1-L8 | plan 修订/冲突仍走仲裁链，CONSULTANT/QA 有阻塞权 |
 
 ---
 
-## 二、目录结构与文件职责  *(II. Directory structure and file duties)*
+## 二、目录结构与文件职责
 
-### 2.1 plan 文件布局  *(Plan file layout)*
+### 2.1 plan 文件布局
 
 ```text
 {workspace_root}/                         # 产出物层
@@ -65,7 +55,7 @@ PROJECTS/{project_id}/                    # 控制面层
 └── HANDOFF/                              # plan 通过 IssuePlan 信封下发
 ```
 
-### 2.2 文件职责  *(File duties)*
+### 2.2 文件职责
 
 | 文件 | 写入方 | 读取方 | 内容 |
 |------|--------|--------|------|
@@ -80,16 +70,16 @@ PROJECTS/{project_id}/                    # 控制面层
 | PROJECT.md 新增字段 | HUMAN/SPEC | ALL | requirements_ref、active_plan 指针 |
 | BLACKBOARD.md 顶部 | SPEC | ALL | active_plan 指针（已有 revision 机制不变） |
 
-### 2.3 控制面与产出物分离铁律  *(Control-plane vs artifact separation iron rule)*
+### 2.3 控制面与产出物分离铁律
 
-- plan 正文（PLAN.md、S{N}/*.md、requirements.md）**必须**在 {workspace_root}/plans/，不得写入 PROJECTS/{project_id}/。
+- plan 正文（PLAN.md、S{N}/*.md、requirements.md）**须**在 {workspace_root}/plans/，禁写入 PROJECTS/{project_id}/。
 - PROJECTS/{project_id}/ 只保留**薄索引**：PROJECT.md 加 2 个指针字段，BLACKBOARD.md 顶部加 active_plan 指针。
 - 信封 IssuePlan / RevisePlan 的 payload 只引用 workspace-relative 路径 + sha256，不内联 plan 正文。
 - 违反此铁律等同 PROTOCOL.md §7.2 第 12 条，由 WATCHDOG 标记 PlanLocationViolation。
 
 ---
 
-## 三、PLAN.md 主文档结构  *(III. PLAN.md main document structure)*
+## 三、PLAN.md 主文档结构
 
 ```markdown
 # Project Plan: {project_id}
@@ -147,7 +137,7 @@ PROJECTS/{project_id}/                    # 控制面层
 
 ---
 
-## 四、各角色 prompt 标准结构  *(IV. Per-role prompt standard structure)*
+## 四、各角色 prompt 标准结构
 
 详细模板见 TEMPLATES/PlanPrompt.md。本节只列概要：
 
@@ -155,7 +145,7 @@ PROJECTS/{project_id}/                    # 控制面层
 给 IMPL 读，含 Role Context / Goal / Required Reading / Scope（file_scope）/ Acceptance Criteria / Implementation Hints / Output Artifacts / Handoff Contract。
 
 ### 4.2 test_prompt.md
-给 TEST 读，结构同 impl_prompt 但面向测试，含 Test Plan / Verdict Criteria。明确禁止抄 IMPL 的 Implementation Hints。
+给 TEST 读，结构同 impl_prompt 但面向测试，含 Test Plan / Verdict Criteria。明确禁抄 IMPL 的 Implementation Hints。
 
 ### 4.3 acceptance.md
 给 SPEC 自己读，含 Pre-acceptance Gates / Decision Rules / Audit。门控项包括 IMPL/TEST 信封、QA Pass、CONSULTANT 签字（如需）、证据、file_scope 一致性。
@@ -165,9 +155,9 @@ PROJECTS/{project_id}/                    # 控制面层
 
 ---
 
-## 五、plan 生命周期  *(V. Plan lifecycle)*
+## 五、plan 生命周期
 
-### 5.1 生成流程（选项 1.5）  *(Generation flow — option 1.5)*
+### 5.1 生成流程（选项 1.5）
 
 ```text
 1. HUMAN 写 {workspace_root}/requirements.md
@@ -186,7 +176,7 @@ PROJECTS/{project_id}/                    # 控制面层
 11. plan 生效，actor 可按 plan 轮询推进
 ```
 
-### 5.2 修订流程  *(Revision flow)*
+### 5.2 修订流程
 
 修订触发场景（覆盖协议调研中的 7 种场景）：
 
@@ -200,25 +190,25 @@ PROJECTS/{project_id}/                    # 控制面层
 
 **plan 整体作废的特殊处理**：
 
-plan 作废（场景 7）不等于 stage 作废。已 Accepted stage 的代码、证据、审计保留为历史事实，不删除、不回滚。plan 作废只影响未执行 stage（Planned / SpecIssued / InProgress 状态）。HUMAN 如需回滚已 Accepted stage 的代码，必须走 DeclareConflict 升级 L1 单独裁决，与 plan 作废是两个独立动作。
+plan 作废（场景 7）不等于 stage 作废。已 Accepted stage 的代码、证据、审计保留为历史事实，不删除、不回滚。plan 作废只影响未执行 stage（Planned / SpecIssued / InProgress 状态）。HUMAN 若需回滚已 Accepted stage 的代码，须走 DeclareConflict 升级 L1 单独裁决，与 plan 作废是两个独立动作。
 
 **修订硬规则**：
 
-1. 修订必须发 RevisePlan 信封，supersedes 引用旧 plan_id
-2. 修订必须写 AUDIT/（plan 修订属高风险）
+1. 修订须发 RevisePlan 信封，supersedes 引用旧 plan_id
+2. 修订须写 AUDIT/（plan 修订属高风险）
 3. **已 Accepted 的 stage 不受 plan 修订影响**（已 Accepted = 历史事实）
 4. 修订只影响 Planned / SpecIssued / InProgress 状态的 stage
 5. 修订需 CONSULTANT + QA 复核 + HUMAN Accept（同生成流程）
 6. BLACKBOARD.md 更新 active_plan 指针到新 plan_id
 
-### 5.3 stage 回退（不修改 plan）  *(Stage rollback — without plan revision)*
+### 5.3 stage 回退（不修改 plan）
 
 - stage 层的 RejectStage **不修改 plan**——plan 里 stage 序列不变
 - 只是某 stage 状态从 Accepted/Testing 回到 InProgress
-- plan 的 on_reject 字段（retry/rollback_to/escalate）是**建议**，实际回退由 SPEC 通过 RejectStage 信封决定
-- 回退必须写 AUDIT（对齐 PROTOCOL.md §6.1）
+- plan 的 on_reject 字段（retry/rollback_to/escalate）是**建议**，实际回退由 SPEC 经 RejectStage 信封决定
+- 回退须写 AUDIT（对齐 PROTOCOL.md §6.1）
 
-### 5.4 stage 阻塞（不修改 plan）  *(Stage block — without plan revision)*
+### 5.4 stage 阻塞（不修改 plan）
 
 - DeclareBlock 标记某 stage 为 Blocked
 - plan 里下游 stage 自动滞留：actor 轮询时检查 gate_state，Blocked 的上游未到 gate_state -> 跳过下游
@@ -227,13 +217,13 @@ plan 作废（场景 7）不等于 stage 作废。已 Accepted stage 的代码�
 
 ---
 
-## 六、并发控制：3 层门控  *(VI. Concurrency control — 3-layer gating)*
+## 六、并发控制：3 层门控
 
-### 6.1 第 1 层：plan 的 stage 门控  *(Layer 1: plan-level stage gating)*
+### 6.1 第 1 层：plan 的 stage 门控
 
 每个 stage 在 PLAN.md 里有：
 - depends_on: [stage_id列表]
-- gate_state: Accepted（前置 stage 必须到此状态）
+- gate_state: Accepted（前置 stage 须到此状态）
 - parallel_with: []（可并行的 stage）
 
 **actor 轮询时的门控规则**：
@@ -249,17 +239,17 @@ plan 作废（场景 7）不等于 stage 作废。已 Accepted stage 的代码�
 
 这是软门控（actor 自觉遵守），对齐 0 运行时原则。WATCHDOG 扫描门控违反，新增检查项见 §6.4。
 
-### 6.2 第 2 层：claim 的 stage_scope 扩展  *(Layer 2: claim stage_scope extension)*
+### 6.2 第 2 层：claim 的 stage_scope 扩展
 
 在 ClaimTask 信封中**新增** stage_scope 字段（claim.schema.json 当前无此字段，但 additionalProperties: true 允许扩展；CLAIMS/README.md 应注明此扩展）：
 
 - 一个 stage 同时最多 1 个 IMPL active claim + 1 个 TEST active claim
 - 同 stage 同角色 2 个 active claim -> WATCHDOG 报 ClaimStageConflict
 - 不同 stage 的 claim 可并行（如 plan 的 parallel_with 允许）
-- file_scope 必须从 plan 的 impl_prompt.md / test_prompt.md 直接复制，不得自造
+- file_scope 须从 plan 的 impl_prompt.md / test_prompt.md 直接复制，禁自造
 - stage_scope 字段值等于 plan 的 stage_id（如 S1、S2）
 
-### 6.3 第 3 层：黑板分段 revision  *(Layer 3: blackboard segmented revision)*
+### 6.3 第 3 层：黑板分段 revision
 
 BLACKBOARD.md 的 Current State 段已有按 stage 分行表格。规则扩展：
 
@@ -270,7 +260,7 @@ BLACKBOARD.md 的 Current State 段已有按 stage 分行表格。规则扩展�
 
 写入顺序仍遵守 ORDERING.md §4：产出物 -> 证据 -> 信封 -> 最后黑板。
 
-### 6.4 WATCHDOG 新增检查项  *(New WATCHDOG checks)*
+### 6.4 WATCHDOG 新增检查项
 
 在 WATCHDOG.md 现有 14 项检查基础上新增：
 
@@ -285,29 +275,29 @@ BLACKBOARD.md 的 Current State 段已有按 stage 分行表格。规则扩展�
 
 ---
 
-## 七、门控：CONSULTANT 与 QA 的阻塞权  *(VII. Gating — CONSULTANT and QA blocking rights)*
+## 七、门控：CONSULTANT 与 QA 的阻塞权
 
-### 7.1 CONSULTANT 战略门控  *(Strategic gating)*
+### 7.1 CONSULTANT 战略门控
 
 | 节点 | 触发 | 阻塞方式 |
 |------|------|---------|
 | plan 生成 | IssuePlan 后 | 不签字 -> plan 不生效 |
 | plan 修订 | RevisePlan 后 | 不签字 -> 修订不生效 |
-| High risk stage | AcceptStage 前 | 不签字 -> SPEC 不得 Accept |
+| High risk stage | AcceptStage 前 | 不签字 -> SPEC 禁 Accept |
 
 CONSULTANT 复核结果**复用 SyncStatus 信封**（不是新动作），在 payload 加 review_type: ConsultantReview 和 verdict: Pass/Veto 字段；不通过时也可发 DeclareConflict（Veto, L3）。
 
-### 7.2 QA 战术门控  *(Tactical gating)*
+### 7.2 QA 战术门控
 
 | 节点 | 触发 | 阻塞方式 |
 |------|------|---------|
 | plan 生成 | IssuePlan 后 | 不签字 -> plan 不生效 |
 | plan 修订 | RevisePlan 后 | 不签字 -> 修订不生效 |
-| 每 stage AcceptStage 前 | TEST 报告提交后 | 不发 QA Pass -> SPEC 不得 Accept |
+| 每 stage AcceptStage 前 | TEST 报告提交后 | 不发 QA Pass -> SPEC 禁 Accept |
 
 QA 复核结果**复用 SyncStatus 信封**（不是新动作），在 payload 加 review_type 字段区分三种场景：QAReview（plan 级复核）、QAStagePass（stage 级门控）；不通过时也可发 DeclareConflict（Veto, L2）。
 
-### 7.3 stage 推进的完整门控链  *(Full gate chain for stage advancement)*
+### 7.3 stage 推进的完整门控链
 
 ```text
 IMPL: SubmitImpl -> TEST
@@ -321,7 +311,7 @@ SPEC 在任一 required 门控未通过时发 AcceptStage，WATCHDOG 报 GateVio
 
 ---
 
-## 八、actor 轮询标准 Loop（plan 模式）  *(VIII. Standard polling loop — plan mode)*
+## 八、actor 轮询标准 Loop（plan 模式）
 
 在 SKILL.md / ROLE_*.md 现有 Loop 基础上，plan 模式下追加：
 
@@ -353,17 +343,17 @@ SPEC 在任一 required 门控未通过时发 AcceptStage，WATCHDOG 报 GateVio
 
 ---
 
-## 九、向后兼容  *(IX. Backward compatibility)*
+## 九、向后兼容
 
 - plan 是**可选**机制，老项目无 plan 不受影响，继续走 SPEC->IssueSpec 流程
 - 项目可在任意时刻引入 plan：HUMAN 写 requirements.md -> SPEC 出 plan -> 生效
 - 项目可在任意时刻退出 plan：HUMAN 在 BLACKBOARD 移除 active_plan 指针 -> 回到原流程
-- plan 与 IssueSpec 可共存：某 stage 没有 prompt 时，SPEC 仍可发 IssueSpec
+- plan 与 IssueSpec 可共存：某 stage 无 prompt 时，SPEC 仍可发 IssueSpec
 - plan 不修改 PROTOCOL.md 任何现有铁律，只增加新字段、新动作、新模板
 
 ---
 
-## 十、新增动作  *(X. New actions)*
+## 十、新增动作
 
 在 ACTIONS.md 新增 2 个动作：
 
@@ -380,7 +370,7 @@ SPEC 在任一 required 门控未通过时发 AcceptStage，WATCHDOG 报 GateVio
 
 ---
 
-## 十一、禁止行为  *(XI. Prohibited acts)*
+## 十一、禁止行为
 
 在 PROTOCOL.md §7 基础上新增 plan 专属禁止：
 
@@ -394,11 +384,11 @@ SPEC 在任一 required 门控未通过时发 AcceptStage，WATCHDOG 报 GateVio
 | 19 | plan 修订不写 AUDIT | 审计铁律 |
 | 20 | plan 修订回滚已 Accepted stage | 历史不可逆 |
 
-### 修订本协议时的同步检查清单  *(Sync checklist when revising this protocol)*
+### 修订本协议时的同步检查清单
 
-凡修改本文件的以下章节，必须同步检查对应文件，防止跨文档漂移：
+凡修改本文件的以下章节，须同步检查对应文件，防止跨文档漂移：
 
-| 修改章节 | 必须同步检查的文件 |
+| 修改章节 | 须同步检查的文件 |
 |---------|------------------|
 | §三 stage 字段结构 | TEMPLATES/IssuePlan.md、TEMPLATES/PlanPrompt.md、EXAMPLE.md 场景二 |
 | §五 生命周期流程 | ROLE_SPEC.md plan 模式章节、SKILL.md §6.1 |
@@ -412,14 +402,9 @@ SPEC 在任一 required 门控未通过时发 AcceptStage，WATCHDOG 报 GateVio
 
 ---
 
-## 十二、修订记录  *(XII. Revision history)*
+## 十二、修订记录
 
 | 日期 | 版本 | 修改内容 | 修改人 |
 |------|------|---------|--------|
 | 2026-07-25 | 1.0 | 初始版本，定义 plan 协议、生命周期、门控、并发控制 | SPEC（按 HUMAN 指令） |
 | 2026-07-26 | 1.0 | 随 ai-collab v1.2 发布；新增修订同步清单；TEMPLATES 增加提交前自检 | SPEC |
-
-| Date | Version | Change | Author |
-|------|---------|--------|--------|
-| 2026-07-25 | 1.0 | Initial version: plan protocol, lifecycle, gating, concurrency control | SPEC (per HUMAN instruction) |
-| 2026-07-26 | 1.0 | Shipped with ai-collab v1.2; added revision sync checklist; pre-submit self-check in TEMPLATES | SPEC |

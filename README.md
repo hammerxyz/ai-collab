@@ -1,26 +1,21 @@
-# AI-COLLAB 使用说明  *(AI-COLLAB Usage Guide)*
+# AI-COLLAB 使用说明
 
-> ai-collab platform version: v1.2 | 最后更新：2026-07-26
-> ai-collab platform version: v1.2 | Last updated: 2026-07-26
+> ai-collab platform version: v1.3 | 最后更新：2026-07-30
 
-`AI-COLLAB` 是一个零运行时、纯文件系统的多 AI IDE 协作总线。它用 Markdown / JSON 文件模拟轻量级 `CCP/CBB`（协作控制面 / 协作黑板），让不同 AI IDE 在 SPEC→IMPL→TEST→SPEC 的标准流水线上按统一协议交接工作。
+`AI-COLLAB` 是零运行时、纯文件系统的多 AI IDE 协作总线。用 Markdown / JSON 文件模拟轻量级 `CCP/CBB`（协作控制面 / 协作黑板），让不同 AI IDE 在 SPEC→IMPL→TEST→SPEC 流水线上按统一协议交接工作。
 
-`AI-COLLAB` is a zero-runtime, filesystem-based collaboration bus for multiple AI IDEs. It uses Markdown / JSON files to emulate a lightweight `CCP/CBB` (Collaboration Control Plane / Collaboration Blackboard), letting different AI IDEs hand off work on the standard SPEC→IMPL→TEST→SPEC pipeline under one shared protocol.
-
-> **一句话**：它不是一个自动化平台，而是一套让多个人类/AI IDE"按同一套规矩交接工作"的协作协议与目录结构。
-> *In one line: it is not an automation platform, but a collaboration protocol and directory structure that lets multiple humans / AI IDEs "hand off work by the same rules".*
+> **一句话**：非自动化平台，而是让多个人类/AI IDE"按同一套规矩交接工作"的协作协议与目录结构。
 
 ![ai-collab 协作循环动画](assets/ai-collab-demo.gif)
-*SPEC 下发规范 → IMPL 实现并自测 → TEST 独立初验 → SPEC 验收（无限循环）*
-*SPEC issues spec → IMPL implements & self-checks → TEST first-verifies → SPEC accepts (looping)*
+*SPEC 下发规范 → IMPL 实现并自测 → TEST 独立初验 → SPEC 验收（循环）*
 
 ---
 
-## 它是什么 / 不是什么  *(What it is, and is not)*
+## 它是什么 / 不是什么
 
-- **文件系统协作总线**：根目录保存协议和模板，具体项目操作写入 `PROJECTS/{project_id}/`。
+- **文件系统协作总线**：根目录存协议和模板，项目操作写入 `PROJECTS/{project_id}/`。
 - **多角色协作协议**：SPEC、IMPL、TEST、CONSULTANT、QA、WATCHDOG、HUMAN 各司其职。
-- **可审计交付机制**：通过 `HANDOFF/`、`CLAIMS/`、`EVIDENCE/`、`AUDIT/` 追踪每次交付。
+- **可审计交付机制**：经 `HANDOFF/`、`CLAIMS/`、`EVIDENCE/`、`AUDIT/` 追踪每次交付。
 - **不依赖任何 AI IDE 内部运行时或专有架构**。
 - **不引入中央调度器**。协作由文件系统 + 定时器或人工唤醒驱动。
 
@@ -28,13 +23,13 @@
 
 ---
 
-## 5 分钟上手  *(5-minute quick start)*
+## 5 分钟上手
 
 1. **放仓库到共享位置** — 让所有 AI IDE 能读写同一仓库。
-2. **每个 AI IDE 加载 [SKILL.md](SKILL.md)** — 这是可直接交给 AI IDE 执行的接入合同。
+2. **每个 AI IDE 加载 [SKILL.md](SKILL.md)** — 可直接交给 AI IDE 执行的接入合同。
 3. **选择角色，登记 Actor** — 用 `TEMPLATES/RegisterActor.md`。
 4. **SPEC 下发任务** — 用 `TEMPLATES/RegisterProject.md` 创建项目 + `TEMPLATES/AssignTask.md` 分发。
-5. **IMPL 认领并实现** — 用 `TEMPLATES/ClaimTask.md`，然后产出代码。
+5. **IMPL 认领并实现** — 用 `TEMPLATES/ClaimTask.md`，产出代码。
 6. **TEST 独立初验** — 跑测试，写 `EVIDENCE/`。
 7. **SPEC 验收** — 用 `TEMPLATES/AcceptStage.md` 通过后推进阶段。
 
@@ -42,7 +37,7 @@
 
 ---
 
-## 目录结构  *(Directory structure)*
+## 目录结构
 
 ```
 <ai-collab>/
@@ -71,12 +66,14 @@
 ├── MONITOR/                 # 只读浏览器看板
 ├── TIMER_LOOP.md            # 定时器驱动协作循环
 ├── ORDERING.md              # 读写顺序与依赖控制
-└── PLAN.md                  # 可选 Project Plan 协议（v1.2，轮询自主推进）
+├── PLAN.md                  # 可选 Project Plan 协议（v1.2，轮询自主推进）
+├── PATTERNS.md              # 推荐模式（v1.3 新增，旧规则降级落点）
+└── VIOLATIONS/              # 违规事件日志（v1.3 新增，非核心附录）
 ```
 
 ---
 
-## 文档索引  *(Document index)*
+## 文档索引
 
 | 想看什么 | 读哪个 |
 |----------|--------|
@@ -90,6 +87,8 @@
 | 定时器驱动协作循环 | [TIMER_LOOP.md](TIMER_LOOP.md) |
 | 读写顺序与 revision 控制 | [ORDERING.md](ORDERING.md) |
 | 可选 Project Plan 协议（多 stage 预编排 + 分角色 prompt） | [PLAN.md](PLAN.md) |
+| 推荐模式（旧规则降级落点，v1.3 新增） | [PATTERNS.md](PATTERNS.md) |
+| 违规事件日志（非核心附录，v1.3 新增） | [VIOLATIONS/README.md](VIOLATIONS/README.md) |
 | 标准模板（信封/ClaimLease/审计/登记） | `TEMPLATES/` |
 | JSON Schema（字段权威定义） | `SCHEMAS/` |
 | 角色运行手册（SPEC/IMPL/TEST/WATCHDOG） | `RUNBOOKS/` |
@@ -101,9 +100,9 @@
 
 ---
 
-## 限制与风险  *(Limits and risks)*
+## 限制与风险
 
-- 文件系统协作的并发上限受制于底层文件系统（Windows 锁、网络共享延迟）。
-- 没有中央吊销机制——恶意或故障 AI IDE 可以写入任何 Markdown；信任边界在协议层。
-- 当前没有自动化 CI 门禁；建议在发布流程中增加 JSON 校验、链接检查、PowerShell 语法检查。
-- 安全模型说明见 [SECURITY.md](SECURITY.md)。
+- 文件系统协作并发上限受底层文件系统制约（Windows 锁、网络共享延迟）。
+- 无中央吊销机制——恶意或故障 AI IDE 可写入任何 Markdown；信任边界在协议层。
+- 当前无自动化 CI 门禁；建议发布流程中增加 JSON 校验、链接检查、PowerShell 语法检查。
+- 安全模型见 [SECURITY.md](SECURITY.md)。

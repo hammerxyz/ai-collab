@@ -1,0 +1,55 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://ai-collab/schemas/violation.schema.json",
+  "title": "Violation Log Entry (v0.2)",
+  "description": "违规事件日志条目。非核心附录，参考态——无运行时校验器，AI IDE 写文件时参考此结构。v1.5 新增，真空期决策待社区复审。",
+  "type": "object",
+  "required": ["violation_id", "actor", "rule_ref", "detected_by", "outcome", "timestamp"],
+  "properties": {
+    "violation_id": {
+      "type": "string",
+      "description": "唯一标识，建议格式 V-{YYYYMMDD}-{seq}"
+    },
+    "actor": {
+      "type": "string",
+      "description": "违规 actor 的 actor_id"
+    },
+    "rule_ref": {
+      "type": "string",
+      "description": "违反的规则引用：不变量 / 模式 / 动作约束。格式如 invariant://control-plane-purity 或 pattern://xxx 或 action://IssueSpec"
+    },
+    "context_hash": {
+      "type": "string",
+      "description": "违规时的上下文快照哈希（用于回溯，可选）"
+    },
+    "detected_by": {
+      "type": "string",
+      "enum": ["WATCHDOG", "HUMAN", "TEST", "QA", "SELF_CHECK"],
+      "description": "检测方。注意：actor 自检记为 SELF_CHECK，数据天然偏低，分析时分层看"
+    },
+    "outcome": {
+      "type": "string",
+      "enum": ["corrected", "arbitrated", "circuit_broken", "escalated", "false_positive"],
+      "description": "处理结果：纠正 / 仲裁 / 熔断 / 升级 / 误报"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "违规时间戳（v0.2 新增）——熔断阈值 N 的标定需要违规频率"
+    },
+    "severity": {
+      "type": "string",
+      "enum": ["low", "medium", "high"],
+      "description": "严重度（v0.2 新增），由 reversible + blast_radius 推导——信任分层和熔断按严重度分级响应"
+    },
+    "near_miss": {
+      "type": "boolean",
+      "default": false,
+      "description": "是否为未遂违规（v0.2 新增）。true 时只记存在性（near_miss + rule_ref），不记内容"
+    },
+    "category": {
+      "type": "string",
+      "description": "违规分类（兜底大类）：logic_error / permission_error / format_error / hallucination / field_omission / stage_skip / arbitration_bypass / reason_chain_missing / false_positive / protocol_ambiguity"
+    }
+  }
+}

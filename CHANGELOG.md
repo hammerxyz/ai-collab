@@ -1,10 +1,26 @@
-<!-- 中文：本文件记录 ai-collab 的版本变更。当前版本 v1.2。尚无自动发布流水线。 -->
+<!-- 中文：本文件记录 ai-collab 的版本变更。当前版本 v1.3。尚无自动发布流水线。 -->
 
 # Changelog
 
 All notable changes to ai-collab are documented here. The project follows a simple `vMAJOR.MINOR` scheme; there is no automated release pipeline yet.
 
-## [v1.2] — current
+## [v1.3] — current
+
+**Core invariants formalized (方向 2) + Risk tagging Phase 1 (方向 3) + Violation log shared foundation**
+
+- **核心不变量正式化**（`PROTOCOL.md` §1.2.1 新增）：3 条一阶不变量（控制面纯净性、权限隔离、证据可追溯）+ 1 条验证框架（状态机单调性）。裁决标准：是否需要全局状态。一阶不变量 actor 自判，单调性 WATCHDOG 事后执行。
+- **方向 3 Phase 1 风险静态标注**（`ACTIONS.md` §〇 新增）：26 个动作标注 `reversible` + `blast_radius`，推导风险分级（Low 14 / Medium 5 / High 9，共 28 个动作含 plan 新增的 2 个）。Low 自动闭环，Medium 闭环+AUDIT，High 升级到人。纯标注，不动现有流程。
+- **违规事件日志 schema v0.2**（共同地基）：新增 `SCHEMAS/violation.schema.json` + `VIOLATIONS/` 目录。9 字段（含 timestamp/severity/near_miss）+ 违规分类法（真违规/误报/兜底大类）。写入权归验收方。
+- **PATTERNS.md** 新增：推荐模式的家，旧规则降级落点。初始含 3 条降级模式（P-001 心跳频率、P-002 证据强度分级、P-003 租约续期提前量）。actor 接入时确认已读。
+- **WATCHDOG 检查项 21-24** 新增：核心不变量违反检查 + 违规日志记录。
+- **SKILL.md / PROMPTS.md** 更新：加风险分级规则 + PATTERNS.md 读取自检。
+
+**Compatibility**
+
+- 完全向后兼容：所有改动都是"新增 + 标注"，不删除/重命名现有字段。现有项目无需改动即可运行。
+- 真空期决策：v1.5 七步法裁决，标注"待社区复审"。社区出现后可追溯复审。
+
+## [v1.2]
 
 **Plan protocol (optional, zero-runtime)**
 
